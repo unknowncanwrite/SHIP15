@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from 'react';
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useShipmentStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -20,14 +20,21 @@ import { calculateProgress, calculatePhaseProgress, getIncompleteTasks } from '@
 import { PHASE_1_TASKS, PHASE_2_TASKS, PHASE_3_TASKS, getForwarderTasks, getFumigationTasks, TaskDefinition } from '@/lib/shipment-definitions';
 import { ShipmentData } from '@/types/shipment';
 
-// Debounce hook for text input
-const useDebounce = (value: string, delay: number, onSave: (val: string) => void) => {
+// Debounce hook for text input - fixed to prevent hook dependency issues
+const useDebouncedSave = (value: string, delay: number, onSave: (val: string) => void) => {
+  const onSaveRef = useRef(onSave);
+  
   useEffect(() => {
+    onSaveRef.current = onSave;
+  }, [onSave]);
+  
+  useEffect(() => {
+    if (!value) return;
     const timer = setTimeout(() => {
-      onSave(value);
+      onSaveRef.current(value);
     }, delay);
     return () => clearTimeout(timer);
-  }, [value, delay, onSave]);
+  }, [value, delay]);
 };
 
 // Sub-component that safely receives non-null shipment data
@@ -38,43 +45,43 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
   const { theme, setTheme } = useTheme();
   const [newTaskInput, setNewTaskInput] = useState('');
   
-  // Local states for manual inputs with debouncing
-  const [manualFumigationName, setManualFumigationName] = useState(currentShipment.manualFumigationName);
-  const [manualForwarderName, setManualForwarderName] = useState(currentShipment.manualForwarderName);
+  // Local states for all text input fields (prevents re-render during typing)
+  const [details, setDetails] = useState(currentShipment.details);
+  const [commercial, setCommercial] = useState(currentShipment.commercial);
+  const [actual, setActual] = useState(currentShipment.actual);
   
-  // Debounced saves
-  useDebounce(manualFumigationName, 800, (val) => {
-    if (val !== currentShipment.manualFumigationName) {
-      updateShipment(currentShipment.id, { manualFumigationName: val });
-    }
-  });
-  
-  useDebounce(manualForwarderName, 800, (val) => {
-    if (val !== currentShipment.manualForwarderName) {
-      updateShipment(currentShipment.id, { manualForwarderName: val });
-    }
-  });
-  
-  // Sync external changes back to local state
+  // Sync when shipment changes (on load or when switching shipments)
   useEffect(() => {
-    setManualFumigationName(currentShipment.manualFumigationName);
-    setManualForwarderName(currentShipment.manualForwarderName);
+    setDetails(currentShipment.details);
+    setCommercial(currentShipment.commercial);
+    setActual(currentShipment.actual);
   }, [currentShipment.id]);
-
-  const handleInputChange = (section: 'details' | 'commercial' | 'actual', field: string, value: any) => {
-    if (section === 'details') {
-      updateShipment(currentShipment.id, {
-        details: { ...currentShipment.details, [field]: value }
-      });
-    } else if (section === 'commercial') {
-      updateShipment(currentShipment.id, {
-        commercial: { ...currentShipment.commercial, [field]: value }
-      });
-    } else if (section === 'actual') {
-      updateShipment(currentShipment.id, {
-        actual: { ...currentShipment.actual, [field]: value }
-      });
+  
+  // Debounced saves for all sections
+  const saveFn = useCallback((section: string, data: any) => {
+    if (section === 'details' && JSON.stringify(data) !== JSON.stringify(currentShipment.details)) {
+      updateShipment(currentShipment.id, { details: data });
+    } else if (section === 'commercial' && JSON.stringify(data) !== JSON.stringify(currentShipment.commercial)) {
+      updateShipment(currentShipment.id, { commercial: data });
+    } else if (section === 'actual' && JSON.stringify(data) !== JSON.stringify(currentShipment.actual)) {
+      updateShipment(currentShipment.id, { actual: data });
     }
+  }, [currentShipment, updateShipment]);
+  
+  useDebouncedSave(JSON.stringify(details), 800, (val) => saveFn('details', JSON.parse(val)));
+  useDebouncedSave(JSON.stringify(commercial), 800, (val) => saveFn('commercial', JSON.parse(val)));
+  useDebouncedSave(JSON.stringify(actual), 800, (val) => saveFn('actual', JSON.parse(val)));
+  
+  const handleDetailChange = (field: string, value: any) => {
+    setDetails(prev => ({ ...prev, [field]: value }));
+  };
+  
+  const handleCommercialChange = (field: string, value: any) => {
+    setCommercial(prev => ({ ...prev, [field]: value }));
+  };
+  
+  const handleActualChange = (field: string, value: any) => {
+    setActual(prev => ({ ...prev, [field]: value }));
   };
 
   const handleDelete = () => {
@@ -405,67 +412,67 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                 
                 <div className="space-y-2">
                     <Label htmlFor="customer" className="text-xs text-muted-foreground uppercase font-bold">Customer</Label>
-                    <Input id="customer" value={currentShipment.details.customer} onChange={(e) => handleInputChange('details', 'customer', e.target.value)} />
+                    <Input id="customer" value={details.customer} onChange={(e) => handleDetailChange('customer', e.target.value)} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="consignee" className="text-xs text-muted-foreground uppercase font-bold">Consignee</Label>
-                    <Input id="consignee" value={currentShipment.details.consignee} onChange={(e) => handleInputChange('details', 'consignee', e.target.value)} />
+                    <Input id="consignee" value={details.consignee} onChange={(e) => handleDetailChange('consignee', e.target.value)} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="location" className="text-xs text-muted-foreground uppercase font-bold">Location</Label>
-                    <Input id="location" value={currentShipment.details.location} onChange={(e) => handleInputChange('details', 'location', e.target.value)} />
+                    <Input id="location" value={details.location} onChange={(e) => handleDetailChange('location', e.target.value)} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="brand" className="text-xs text-muted-foreground uppercase font-bold">Brand</Label>
-                    <Input id="brand" value={currentShipment.details.brand} onChange={(e) => handleInputChange('details', 'brand', e.target.value)} />
+                    <Input id="brand" value={details.brand} onChange={(e) => handleDetailChange('brand', e.target.value)} />
                 </div>
 
                 {currentShipment.shipmentType === 'with-inspection' && (
                     <div className="space-y-2">
                         <Label htmlFor="inspectionDate" className="text-xs text-muted-foreground uppercase font-bold">Inspection Date</Label>
-                        <Input type="date" id="inspectionDate" value={currentShipment.details.inspectionDate} onChange={(e) => handleInputChange('details', 'inspectionDate', e.target.value)} />
+                        <Input type="date" id="inspectionDate" value={details.inspectionDate} onChange={(e) => handleDetailChange('inspectionDate', e.target.value)} />
                     </div>
                 )}
                 <div className="space-y-2">
                     <Label htmlFor="loadingDate" className="text-xs text-muted-foreground uppercase font-bold">Loading Date</Label>
-                    <Input type="date" id="loadingDate" value={currentShipment.details.loadingDate} onChange={(e) => handleInputChange('details', 'loadingDate', e.target.value)} />
+                    <Input type="date" id="loadingDate" value={details.loadingDate} onChange={(e) => handleDetailChange('loadingDate', e.target.value)} />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="eta" className="text-xs text-muted-foreground uppercase font-bold">ETA</Label>
-                    <Input type="date" id="eta" value={currentShipment.details.eta} onChange={(e) => handleInputChange('details', 'eta', e.target.value)} />
+                    <Input type="date" id="eta" value={details.eta} onChange={(e) => handleDetailChange('eta', e.target.value)} />
                 </div>
                 {currentShipment.shipmentType === 'with-inspection' && (
                     <div className="space-y-2">
                         <Label htmlFor="idf" className="text-xs text-muted-foreground uppercase font-bold">IDF Number</Label>
-                        <Input id="idf" value={currentShipment.details.idf} onChange={(e) => handleInputChange('details', 'idf', e.target.value)} className="font-mono uppercase" />
+                        <Input id="idf" value={details.idf} onChange={(e) => handleDetailChange('idf', e.target.value)} className="font-mono uppercase" />
                     </div>
                 )}
                 {currentShipment.shipmentType === 'with-inspection' && (
                     <div className="space-y-2">
                         <Label htmlFor="seal" className="text-xs text-muted-foreground uppercase font-bold">Seal Number</Label>
-                        <Input id="seal" value={currentShipment.details.seal} onChange={(e) => handleInputChange('details', 'seal', e.target.value)} className="font-mono uppercase" />
+                        <Input id="seal" value={details.seal} onChange={(e) => handleDetailChange('seal', e.target.value)} className="font-mono uppercase" />
                     </div>
                 )}
 
                 {currentShipment.shipmentType === 'with-inspection' && (
                     <div className="space-y-2">
                         <Label htmlFor="ucr" className="text-xs text-muted-foreground uppercase font-bold">UCR</Label>
-                        <Input id="ucr" value={currentShipment.details.ucr} onChange={(e) => handleInputChange('details', 'ucr', e.target.value)} className="font-mono uppercase" />
+                        <Input id="ucr" value={details.ucr} onChange={(e) => handleDetailChange('ucr', e.target.value)} className="font-mono uppercase" />
                     </div>
                 )}
                 {currentShipment.shipmentType === 'with-inspection' && (
                     <div className="space-y-2">
                         <Label htmlFor="proforma" className="text-xs text-muted-foreground uppercase font-bold">Proforma Inv.</Label>
-                        <Input id="proforma" value={currentShipment.details.proforma} onChange={(e) => handleInputChange('details', 'proforma', e.target.value)} className="font-mono uppercase" />
+                        <Input id="proforma" value={details.proforma} onChange={(e) => handleDetailChange('proforma', e.target.value)} className="font-mono uppercase" />
                     </div>
                 )}
                 <div className="space-y-2">
                     <Label htmlFor="container" className="text-xs text-muted-foreground uppercase font-bold">Container No.</Label>
-                    <Input id="container" value={currentShipment.details.container} onChange={(e) => handleInputChange('details', 'container', e.target.value)} className="font-mono uppercase" />
+                    <Input id="container" value={details.container} onChange={(e) => handleDetailChange('container', e.target.value)} className="font-mono uppercase" />
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="booking" className="text-xs text-muted-foreground uppercase font-bold">Booking No.</Label>
-                    <Input id="booking" value={currentShipment.details.booking} onChange={(e) => handleInputChange('details', 'booking', e.target.value)} className="font-mono uppercase" />
+                    <Input id="booking" value={details.booking} onChange={(e) => handleDetailChange('booking', e.target.value)} className="font-mono uppercase" />
                 </div>
                 </div>
 
@@ -477,19 +484,19 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Invoice #</Label>
-                            <Input className="h-8" value={currentShipment.commercial.invoice} onChange={(e) => handleInputChange('commercial', 'invoice', e.target.value)} />
+                            <Input className="h-8" value={commercial.invoice} onChange={(e) => handleCommercialChange('invoice', e.target.value)} />
                         </div>
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Quantity</Label>
-                            <Input className="h-8" value={currentShipment.commercial.qty} onChange={(e) => handleInputChange('commercial', 'qty', e.target.value)} />
+                            <Input className="h-8" value={commercial.qty} onChange={(e) => handleCommercialChange('qty', e.target.value)} />
                         </div>
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Net Weight</Label>
-                            <Input className="h-8" value={currentShipment.commercial.netWeight} onChange={(e) => handleInputChange('commercial', 'netWeight', e.target.value)} />
+                            <Input className="h-8" value={commercial.netWeight} onChange={(e) => handleCommercialChange('netWeight', e.target.value)} />
                         </div>
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Gross Weight</Label>
-                            <Input className="h-8" value={currentShipment.commercial.grossWeight} onChange={(e) => handleInputChange('commercial', 'grossWeight', e.target.value)} />
+                            <Input className="h-8" value={commercial.grossWeight} onChange={(e) => handleCommercialChange('grossWeight', e.target.value)} />
                         </div>
                         </div>
                     </div>
@@ -500,27 +507,27 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Invoice #</Label>
-                            <Input className="h-8 bg-white" value={currentShipment.actual.invoice} onChange={(e) => handleInputChange('actual', 'invoice', e.target.value)} />
+                            <Input className="h-8 bg-white" value={actual.invoice} onChange={(e) => handleActualChange('invoice', e.target.value)} />
                         </div>
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Quantity</Label>
-                            <Input className="h-8 bg-white" value={currentShipment.actual.qty} onChange={(e) => handleInputChange('actual', 'qty', e.target.value)} />
+                            <Input className="h-8 bg-white" value={actual.qty} onChange={(e) => handleActualChange('qty', e.target.value)} />
                         </div>
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Net Weight</Label>
-                            <Input className="h-8 bg-white" value={currentShipment.actual.netWeight} onChange={(e) => handleInputChange('actual', 'netWeight', e.target.value)} />
+                            <Input className="h-8 bg-white" value={actual.netWeight} onChange={(e) => handleActualChange('netWeight', e.target.value)} />
                         </div>
                         <div className="space-y-1">
                             <Label className="text-xs text-muted-foreground">Gross Weight</Label>
-                            <Input className="h-8 bg-white" value={currentShipment.actual.grossWeight} onChange={(e) => handleInputChange('actual', 'grossWeight', e.target.value)} />
+                            <Input className="h-8 bg-white" value={actual.grossWeight} onChange={(e) => handleActualChange('grossWeight', e.target.value)} />
                         </div>
                         </div>
                         <div className="mt-4 flex items-center space-x-2 bg-success/10 p-3 rounded-md border border-success/20 w-fit">
                         <input 
                             type="checkbox" 
                             id="invoiceSent"
-                            checked={currentShipment.actual.invoiceSent}
-                            onChange={(e) => handleInputChange('actual', 'invoiceSent', e.target.checked)}
+                            checked={actual.invoiceSent}
+                            onChange={(e) => handleActualChange('invoiceSent', e.target.checked)}
                             className="h-4 w-4 text-success focus:ring-success border-gray-300 rounded cursor-pointer"
                         />
                         <Label htmlFor="invoiceSent" className="text-success font-bold cursor-pointer text-sm">Actual Invoice Sent to Client</Label>
