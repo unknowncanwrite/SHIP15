@@ -22,6 +22,7 @@ interface PhaseSectionProps {
   checklistState: Record<string, boolean>;
   onToggle: (key: string) => void;
   progress: number;
+  missedTaskIds?: string[];
 }
 
 export default function PhaseSection({ 
@@ -30,7 +31,8 @@ export default function PhaseSection({
   tasks, 
   checklistState, 
   onToggle,
-  progress 
+  progress,
+  missedTaskIds = []
 }: PhaseSectionProps) {
   const { toast } = useToast();
 
@@ -59,9 +61,11 @@ export default function PhaseSection({
       </div>
       
       <div className="p-4 space-y-4">
-        {tasks.map((task) => (
-          <div key={task.id} className="space-y-2">
-            <div className="flex items-start justify-between group p-2 rounded-md hover:bg-muted/50 transition-colors">
+        {tasks.map((task) => {
+          const isMissed = missedTaskIds.includes(task.id);
+          return (
+          <div key={task.id} className={`space-y-2 ${isMissed ? 'border-l-2 border-l-warning bg-warning/5 pl-3 py-2 rounded' : ''}`}>
+            <div className={`flex items-start justify-between group p-2 rounded-md hover:bg-muted/50 transition-colors ${isMissed ? 'border-l-4 border-l-warning/50 pl-1' : ''}`}>
               <div className="flex items-start space-x-3 pt-1">
                 <Checkbox 
                   id={task.id} 
@@ -73,11 +77,12 @@ export default function PhaseSection({
                   <Label 
                     htmlFor={task.id}
                     className={`text-sm font-medium leading-none cursor-pointer ${
-                      checklistState[task.id] ? 'text-muted-foreground line-through decoration-muted-foreground/50' : ''
+                      checklistState[task.id] ? 'text-muted-foreground line-through decoration-muted-foreground/50' : isMissed ? 'text-warning font-semibold' : ''
                     }`}
                   >
                     {task.label}
                   </Label>
+                  {isMissed && <div className="text-xs text-warning font-medium">⚠ Skipped</div>}
                 </div>
               </div>
               
@@ -106,7 +111,8 @@ export default function PhaseSection({
               </div>
             )}
           </div>
-        ))}
+        );
+        })}
       </div>
     </div>
   );

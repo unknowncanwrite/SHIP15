@@ -477,6 +477,7 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                         checklistState={currentShipment.checklist}
                         onToggle={(key) => toggleChecklist(currentShipment.id, key)}
                         progress={calculatePhaseProgress(currentShipment, phase1Mapped)}
+                        missedTaskIds={incompleteTasks.map(t => t.id)}
                     />
                     <PhaseSection 
                         title={`Phase 2: Clearance & Fumigation (${getFumigationDisplayName()})`}
@@ -485,6 +486,7 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                         checklistState={currentShipment.checklist}
                         onToggle={(key) => toggleChecklist(currentShipment.id, key)}
                         progress={calculatePhaseProgress(currentShipment, fumigationMapped)}
+                        missedTaskIds={incompleteTasks.map(t => t.id)}
                     />
                     <PhaseSection 
                         title="Phase 3: COC Finalization" 
@@ -493,6 +495,7 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                         checklistState={currentShipment.checklist}
                         onToggle={(key) => toggleChecklist(currentShipment.id, key)}
                         progress={calculatePhaseProgress(currentShipment, phase3Mapped)}
+                        missedTaskIds={incompleteTasks.map(t => t.id)}
                     />
                     </>
                 )}
@@ -504,6 +507,7 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                     checklistState={currentShipment.checklist}
                     onToggle={(key) => toggleChecklist(currentShipment.id, key)}
                     progress={calculatePhaseProgress(currentShipment, forwarderMapped)}
+                    missedTaskIds={incompleteTasks.map(t => t.id)}
                 />
 
                 {/* Custom Tasks Section */}

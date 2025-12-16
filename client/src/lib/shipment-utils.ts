@@ -59,23 +59,18 @@ export function getIncompleteTasks(data: ShipmentData): TaskDefinition[] {
   const forwarderTasks = getForwarderTasks(data);
   allTasks = [...allTasks, ...forwarderTasks];
 
-  // Check if there are any completed tasks
-  const hasCompletedTasks = allTasks.some(task => data.checklist[task.id]);
-
-  // Only show missed tasks if there are completed tasks (meaning tasks were skipped)
-  if (!hasCompletedTasks) {
-    return [];
-  }
-
-  // Return incomplete tasks that come after a completed task (skipped tasks)
+  // Find skipped tasks: incomplete tasks that have at least one completed task after them
   const missedTasks: TaskDefinition[] = [];
-  let foundCompleted = false;
 
-  for (const task of allTasks) {
-    if (data.checklist[task.id]) {
-      foundCompleted = true;
-    } else if (foundCompleted && !data.checklist[task.id]) {
-      missedTasks.push(task);
+  for (let i = 0; i < allTasks.length; i++) {
+    const task = allTasks[i];
+    // If this task is incomplete
+    if (!data.checklist[task.id]) {
+      // Check if there's any completed task after it
+      const hasCompletedAfter = allTasks.slice(i + 1).some(t => data.checklist[t.id]);
+      if (hasCompletedAfter) {
+        missedTasks.push(task);
+      }
     }
   }
 
