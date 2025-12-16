@@ -343,31 +343,41 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                     <Input id="brand" value={currentShipment.details.brand} onChange={(e) => handleInputChange('details', 'brand', e.target.value)} />
                 </div>
 
-                <div className="space-y-2">
-                    <Label htmlFor="inspectionDate" className="text-xs text-muted-foreground uppercase font-bold">Inspection Date</Label>
-                    <Input type="date" id="inspectionDate" value={currentShipment.details.inspectionDate} onChange={(e) => handleInputChange('details', 'inspectionDate', e.target.value)} />
-                </div>
+                {currentShipment.shipmentType === 'with-inspection' && (
+                    <div className="space-y-2">
+                        <Label htmlFor="inspectionDate" className="text-xs text-muted-foreground uppercase font-bold">Inspection Date</Label>
+                        <Input type="date" id="inspectionDate" value={currentShipment.details.inspectionDate} onChange={(e) => handleInputChange('details', 'inspectionDate', e.target.value)} />
+                    </div>
+                )}
                 <div className="space-y-2">
                     <Label htmlFor="eta" className="text-xs text-muted-foreground uppercase font-bold">ETA</Label>
                     <Input type="date" id="eta" value={currentShipment.details.eta} onChange={(e) => handleInputChange('details', 'eta', e.target.value)} />
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="idf" className="text-xs text-muted-foreground uppercase font-bold">IDF Number</Label>
-                    <Input id="idf" value={currentShipment.details.idf} onChange={(e) => handleInputChange('details', 'idf', e.target.value)} className="font-mono uppercase" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="seal" className="text-xs text-muted-foreground uppercase font-bold">Seal Number</Label>
-                    <Input id="seal" value={currentShipment.details.seal} onChange={(e) => handleInputChange('details', 'seal', e.target.value)} className="font-mono uppercase" />
-                </div>
+                {currentShipment.shipmentType === 'with-inspection' && (
+                    <div className="space-y-2">
+                        <Label htmlFor="idf" className="text-xs text-muted-foreground uppercase font-bold">IDF Number</Label>
+                        <Input id="idf" value={currentShipment.details.idf} onChange={(e) => handleInputChange('details', 'idf', e.target.value)} className="font-mono uppercase" />
+                    </div>
+                )}
+                {currentShipment.shipmentType === 'with-inspection' && (
+                    <div className="space-y-2">
+                        <Label htmlFor="seal" className="text-xs text-muted-foreground uppercase font-bold">Seal Number</Label>
+                        <Input id="seal" value={currentShipment.details.seal} onChange={(e) => handleInputChange('details', 'seal', e.target.value)} className="font-mono uppercase" />
+                    </div>
+                )}
 
-                <div className="space-y-2">
-                    <Label htmlFor="ucr" className="text-xs text-muted-foreground uppercase font-bold">UCR</Label>
-                    <Input id="ucr" value={currentShipment.details.ucr} onChange={(e) => handleInputChange('details', 'ucr', e.target.value)} className="font-mono uppercase" />
-                </div>
-                <div className="space-y-2">
-                    <Label htmlFor="proforma" className="text-xs text-muted-foreground uppercase font-bold">Proforma Inv.</Label>
-                    <Input id="proforma" value={currentShipment.details.proforma} onChange={(e) => handleInputChange('details', 'proforma', e.target.value)} className="font-mono uppercase" />
-                </div>
+                {currentShipment.shipmentType === 'with-inspection' && (
+                    <div className="space-y-2">
+                        <Label htmlFor="ucr" className="text-xs text-muted-foreground uppercase font-bold">UCR</Label>
+                        <Input id="ucr" value={currentShipment.details.ucr} onChange={(e) => handleInputChange('details', 'ucr', e.target.value)} className="font-mono uppercase" />
+                    </div>
+                )}
+                {currentShipment.shipmentType === 'with-inspection' && (
+                    <div className="space-y-2">
+                        <Label htmlFor="proforma" className="text-xs text-muted-foreground uppercase font-bold">Proforma Inv.</Label>
+                        <Input id="proforma" value={currentShipment.details.proforma} onChange={(e) => handleInputChange('details', 'proforma', e.target.value)} className="font-mono uppercase" />
+                    </div>
+                )}
                 <div className="space-y-2">
                     <Label htmlFor="container" className="text-xs text-muted-foreground uppercase font-bold">Container No.</Label>
                     <Input id="container" value={currentShipment.details.container} onChange={(e) => handleInputChange('details', 'container', e.target.value)} className="font-mono uppercase" />
