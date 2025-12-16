@@ -350,12 +350,12 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                     </div>
                 )}
                 <div className="space-y-2">
-                    <Label htmlFor="eta" className="text-xs text-muted-foreground uppercase font-bold">ETA</Label>
-                    <Input type="date" id="eta" value={currentShipment.details.eta} onChange={(e) => handleInputChange('details', 'eta', e.target.value)} />
-                </div>
-                <div className="space-y-2">
                     <Label htmlFor="loadingDate" className="text-xs text-muted-foreground uppercase font-bold">Loading Date</Label>
                     <Input type="date" id="loadingDate" value={currentShipment.details.loadingDate} onChange={(e) => handleInputChange('details', 'loadingDate', e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="eta" className="text-xs text-muted-foreground uppercase font-bold">ETA</Label>
+                    <Input type="date" id="eta" value={currentShipment.details.eta} onChange={(e) => handleInputChange('details', 'eta', e.target.value)} />
                 </div>
                 {currentShipment.shipmentType === 'with-inspection' && (
                     <div className="space-y-2">
