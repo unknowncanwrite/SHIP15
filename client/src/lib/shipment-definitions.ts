@@ -64,9 +64,10 @@ export const getForwarderTasks = (data: ShipmentData): TaskDefinition[] => {
        { id: 'p4_hmi_loading', label: 'HMI: Confirm Loading' }
     ];
   } else {
+    const forwarderName = data.manualForwarderName || 'Forwarder';
     return [
-       { id: 'p4_manual_contact', label: `Manual (${data.manualForwarderName || 'Forwarder'}): Contact via ${data.manualMethod}` },
-       { id: 'p4_manual_docs', label: 'Manual: Send Documents' }
+       { id: 'p4_manual_contact', label: `${forwarderName}: Contact via ${data.manualMethod}` },
+       { id: 'p4_manual_docs', label: `${forwarderName}: Send Documents` }
     ];
   }
 };
@@ -97,10 +98,11 @@ export const getFumigationTasks = (data: ShipmentData): TaskDefinition[] => {
        { id: 'p2_sgs_confirm', label: 'SGS: Receive Fumigation Confirmation' }
     ];
   } else {
+    const providerName = data.manualFumigationName || 'Fumigation Provider';
     return [
-       { id: 'p2_manual_fum_contact', label: `Manual (${data.manualFumigationName || 'Fumigation'}): Contact via ${data.manualFumigationMethod}` },
-       { id: 'p2_manual_fum_docs', label: 'Manual: Send Fumigation Documents' },
-       { id: 'p2_manual_fum_confirm', label: 'Manual: Confirm Fumigation Completion' }
+       { id: 'p2_manual_fum_contact', label: `${providerName}: Contact via ${data.manualFumigationMethod}` },
+       { id: 'p2_manual_fum_docs', label: `${providerName}: Send Fumigation Documents` },
+       { id: 'p2_manual_fum_confirm', label: `${providerName}: Confirm Fumigation Completion` }
     ];
   }
 };
