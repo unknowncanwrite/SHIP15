@@ -20,6 +20,7 @@ export interface ShipmentData {
     brand: string;         // #inp-brand
     inspectionDate: string;// #inp-date (YYYY-MM-DD)
     eta: string;           // #inp-eta (YYYY-MM-DD)
+    loadingDate: string;   // #inp-loading-date (YYYY-MM-DD)
     idf: string;           // #inp-idf
     seal: string;          // #inp-seal
     ucr: string;           // #inp-ucr
@@ -64,6 +65,7 @@ export const initialShipmentData: ShipmentData = {
     brand: '',
     inspectionDate: '',
     eta: '',
+    loadingDate: '',
     idf: '',
     seal: '',
     ucr: '',
