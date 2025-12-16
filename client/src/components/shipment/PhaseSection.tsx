@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Copy, FileText } from "lucide-react";
+import { Copy, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Task {
   id: string;
@@ -31,6 +33,7 @@ export default function PhaseSection({
   progress 
 }: PhaseSectionProps) {
   const { toast } = useToast();
+  const [selectedTemplate, setSelectedTemplate] = useState<{ subject: string; body: string } | null>(null);
 
   const copyToClipboard = (subject: string, body: string) => {
     const text = `Subject: ${subject}\n\n${body}`;
@@ -79,18 +82,57 @@ export default function PhaseSection({
             </div>
             
             {task.hasEmail && (
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="h-8 text-xs text-accent hover:text-accent hover:bg-accent/10 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => copyToClipboard(task.emailSubject || '', task.emailBody || '')}
-              >
-                <Copy className="h-3 w-3 mr-1" /> Copy Email
-              </Button>
+              <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 text-xs text-accent hover:text-accent hover:bg-accent/10"
+                  onClick={() => setSelectedTemplate({ subject: task.emailSubject || '', body: task.emailBody || '' })}
+                >
+                  <Eye className="h-3 w-3 mr-1" /> View
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 text-xs text-accent hover:text-accent hover:bg-accent/10"
+                  onClick={() => copyToClipboard(task.emailSubject || '', task.emailBody || '')}
+                >
+                  <Copy className="h-3 w-3 mr-1" /> Copy
+                </Button>
+              </div>
             )}
           </div>
         ))}
       </div>
+
+      <Dialog open={!!selectedTemplate} onOpenChange={() => setSelectedTemplate(null)}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Email Template</DialogTitle>
+          </DialogHeader>
+          {selectedTemplate && (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-muted-foreground">Subject</Label>
+                <div className="p-3 bg-muted rounded-md border text-sm">{selectedTemplate.subject}</div>
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase text-muted-foreground">Body</Label>
+                <div className="p-3 bg-muted rounded-md border text-sm whitespace-pre-wrap">{selectedTemplate.body}</div>
+              </div>
+              <Button 
+                className="w-full"
+                onClick={() => {
+                  copyToClipboard(selectedTemplate.subject, selectedTemplate.body);
+                  setSelectedTemplate(null);
+                }}
+              >
+                <Copy className="h-4 w-4 mr-2" /> Copy & Close
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
