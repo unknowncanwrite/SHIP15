@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useRoute, useLocation } from 'wouter';
 import { useShipmentStore } from '@/lib/store';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,16 @@ import { calculateProgress, calculatePhaseProgress, getIncompleteTasks } from '@
 import { PHASE_1_TASKS, PHASE_2_TASKS, PHASE_3_TASKS, getForwarderTasks, getFumigationTasks, TaskDefinition } from '@/lib/shipment-definitions';
 import { ShipmentData } from '@/types/shipment';
 
+// Debounce hook for text input
+const useDebounce = (value: string, delay: number, onSave: (val: string) => void) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onSave(value);
+    }, delay);
+    return () => clearTimeout(timer);
+  }, [value, delay, onSave]);
+};
+
 // Sub-component that safely receives non-null shipment data
 function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentData }) {
   const [_, setLocation] = useLocation();
@@ -27,6 +37,29 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
   const [newTaskInput, setNewTaskInput] = useState('');
+  
+  // Local states for manual inputs with debouncing
+  const [manualFumigationName, setManualFumigationName] = useState(currentShipment.manualFumigationName);
+  const [manualForwarderName, setManualForwarderName] = useState(currentShipment.manualForwarderName);
+  
+  // Debounced saves
+  useDebounce(manualFumigationName, 800, (val) => {
+    if (val !== currentShipment.manualFumigationName) {
+      updateShipment(currentShipment.id, { manualFumigationName: val });
+    }
+  });
+  
+  useDebounce(manualForwarderName, 800, (val) => {
+    if (val !== currentShipment.manualForwarderName) {
+      updateShipment(currentShipment.id, { manualForwarderName: val });
+    }
+  });
+  
+  // Sync external changes back to local state
+  useEffect(() => {
+    setManualFumigationName(currentShipment.manualFumigationName);
+    setManualForwarderName(currentShipment.manualForwarderName);
+  }, [currentShipment.id]);
 
   const handleInputChange = (section: 'details' | 'commercial' | 'actual', field: string, value: any) => {
     if (section === 'details') {
@@ -277,8 +310,8 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                             <div className="pt-2 space-y-2 animate-in slide-in-from-top-2 fade-in">
                                 <Input 
                                     placeholder="Fumigation Provider Name" 
-                                    value={currentShipment.manualFumigationName} 
-                                    onChange={(e) => updateShipment(currentShipment.id, { manualFumigationName: e.target.value })}
+                                    value={manualFumigationName} 
+                                    onChange={(e) => setManualFumigationName(e.target.value)}
                                     className="h-8 text-sm"
                                 />
                                 <RadioGroup 
@@ -326,8 +359,8 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                             <div className="pt-2 space-y-2 animate-in slide-in-from-top-2 fade-in">
                                 <Input 
                                     placeholder="Forwarder Name" 
-                                    value={currentShipment.manualForwarderName} 
-                                    onChange={(e) => updateShipment(currentShipment.id, { manualForwarderName: e.target.value })}
+                                    value={manualForwarderName} 
+                                    onChange={(e) => setManualForwarderName(e.target.value)}
                                     className="h-8 text-sm"
                                 />
                                 <RadioGroup 
