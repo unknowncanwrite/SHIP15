@@ -8,6 +8,9 @@ export interface ShipmentData {
   forwarder: 'xpo' | 'hmi' | 'manual';
   manualForwarderName: string;
   manualMethod: 'email' | 'whatsapp';
+  fumigation: 'sky-services' | 'sgs' | 'manual';
+  manualFumigationName: string;
+  manualFumigationMethod: 'email' | 'whatsapp';
 
   // --- Input Fields (Mapped from HTML) ---
   details: {
@@ -51,6 +54,9 @@ export const initialShipmentData: ShipmentData = {
   forwarder: 'xpo',
   manualForwarderName: '',
   manualMethod: 'email',
+  fumigation: 'sky-services',
+  manualFumigationName: '',
+  manualFumigationMethod: 'email',
   details: {
     customer: '',
     consignee: '',

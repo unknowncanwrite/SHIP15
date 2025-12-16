@@ -17,7 +17,7 @@ import { useTheme } from 'next-themes';
 import { printDeclaration, printUndertaking, printShoesUndertaking } from '@/lib/PrintTemplates';
 import { format } from 'date-fns';
 import { calculateProgress, calculatePhaseProgress } from '@/lib/shipment-utils';
-import { PHASE_1_TASKS, PHASE_2_TASKS, PHASE_3_TASKS, getForwarderTasks, TaskDefinition } from '@/lib/shipment-definitions';
+import { PHASE_1_TASKS, PHASE_2_TASKS, PHASE_3_TASKS, getForwarderTasks, getFumigationTasks, TaskDefinition } from '@/lib/shipment-definitions';
 import { ShipmentData } from '@/types/shipment';
 
 // Sub-component that safely receives non-null shipment data
@@ -106,6 +106,7 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
   const phase2Mapped = useMemo(() => mapTasks(PHASE_2_TASKS, currentShipment), [currentShipment]);
   const phase3Mapped = useMemo(() => mapTasks(PHASE_3_TASKS, currentShipment), [currentShipment]);
   const forwarderMapped = useMemo(() => mapTasks(getForwarderTasks(currentShipment), currentShipment), [currentShipment]);
+  const fumigationMapped = useMemo(() => mapTasks(getFumigationTasks(currentShipment), currentShipment), [currentShipment]);
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -236,6 +237,55 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                                     <div className="flex items-center space-x-2">
                                         <RadioGroupItem value="whatsapp" id="m2" />
                                         <Label htmlFor="m2" className="text-xs">WhatsApp</Label>
+                                    </div>
+                                </RadioGroup>
+                            </div>
+                        )}
+                    </div>
+
+                    <Separator />
+
+                    <div className="space-y-3">
+                        <Label>Fumigation</Label>
+                        <RadioGroup 
+                            value={currentShipment.fumigation} 
+                            onValueChange={(val) => updateShipment(currentShipment.id, { fumigation: val as any })}
+                            className="flex flex-col space-y-1"
+                        >
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="sky-services" id="fum1" />
+                                <Label htmlFor="fum1" className="cursor-pointer font-normal">Sky Services</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="sgs" id="fum2" />
+                                <Label htmlFor="fum2" className="cursor-pointer font-normal">SGS</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                                <RadioGroupItem value="manual" id="fum3" />
+                                <Label htmlFor="fum3" className="cursor-pointer font-normal">Manual / Other</Label>
+                            </div>
+                        </RadioGroup>
+                        
+                        {currentShipment.fumigation === 'manual' && (
+                            <div className="pt-2 space-y-2 animate-in slide-in-from-top-2 fade-in">
+                                <Input 
+                                    placeholder="Fumigation Provider Name" 
+                                    value={currentShipment.manualFumigationName} 
+                                    onChange={(e) => updateShipment(currentShipment.id, { manualFumigationName: e.target.value })}
+                                    className="h-8 text-sm"
+                                />
+                                <RadioGroup 
+                                    value={currentShipment.manualFumigationMethod} 
+                                    onValueChange={(val) => updateShipment(currentShipment.id, { manualFumigationMethod: val as any })}
+                                    className="flex items-center gap-4"
+                                >
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="email" id="fum_m1" />
+                                        <Label htmlFor="fum_m1" className="text-xs">Email</Label>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <RadioGroupItem value="whatsapp" id="fum_m2" />
+                                        <Label htmlFor="fum_m2" className="text-xs">WhatsApp</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
@@ -390,10 +440,10 @@ function ShipmentDetailContent({ currentShipment }: { currentShipment: ShipmentD
                     <PhaseSection 
                         title="Phase 2: Clearance & Fumigation" 
                         phaseId="p2" 
-                        tasks={phase2Mapped}
+                        tasks={fumigationMapped}
                         checklistState={currentShipment.checklist}
                         onToggle={(key) => toggleChecklist(currentShipment.id, key)}
-                        progress={calculatePhaseProgress(currentShipment, phase2Mapped)}
+                        progress={calculatePhaseProgress(currentShipment, fumigationMapped)}
                     />
                     <PhaseSection 
                         title="Phase 3: COC Finalization" 

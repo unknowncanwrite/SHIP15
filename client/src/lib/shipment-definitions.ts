@@ -70,3 +70,37 @@ export const getForwarderTasks = (data: ShipmentData): TaskDefinition[] => {
     ];
   }
 };
+
+export const getFumigationTasks = (data: ShipmentData): TaskDefinition[] => {
+  if (data.fumigation === 'sky-services') {
+    return [
+       { id: 'p2_sky_booking', label: 'Sky Services: Book Fumigation' },
+       { 
+         id: 'p2_sky_docs', 
+         label: 'Sky Services: Send Required Docs', 
+         hasEmail: true, 
+         emailSubject: (d) => `Fumigation Request - ${d.id}`, 
+         emailBody: () => `Please find attached the required documents for fumigation.` 
+       },
+       { id: 'p2_sky_confirm', label: 'Sky Services: Confirm Fumigation Date' }
+    ];
+  } else if (data.fumigation === 'sgs') {
+    return [
+       { id: 'p2_sgs_booking', label: 'SGS: Initiate Fumigation' },
+       { 
+         id: 'p2_sgs_docs', 
+         label: 'SGS: Submit Documentation', 
+         hasEmail: true, 
+         emailSubject: (d) => `SGS Fumigation - ${d.id}`, 
+         emailBody: () => `Please find attached the required documents for SGS fumigation.` 
+       },
+       { id: 'p2_sgs_confirm', label: 'SGS: Receive Fumigation Confirmation' }
+    ];
+  } else {
+    return [
+       { id: 'p2_manual_fum_contact', label: `Manual (${data.manualFumigationName || 'Fumigation'}): Contact via ${data.manualFumigationMethod}` },
+       { id: 'p2_manual_fum_docs', label: 'Manual: Send Fumigation Documents' },
+       { id: 'p2_manual_fum_confirm', label: 'Manual: Confirm Fumigation Completion' }
+    ];
+  }
+};
