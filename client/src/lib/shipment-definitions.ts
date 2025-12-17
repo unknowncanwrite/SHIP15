@@ -1,5 +1,11 @@
 import { ShipmentData } from "@/types/shipment";
 
+const formatDate = (dateStr: string): string => {
+  if (!dateStr) return '';
+  const [year, month, day] = dateStr.split('-');
+  return `${day}/${month}/${year}`;
+};
+
 export interface TaskDefinition {
   id: string;
   label: string;
@@ -20,10 +26,10 @@ export const PHASE_1_TASKS: TaskDefinition[] = [
     needsAttachmentCheck: true,
     emailTo: 'Fazila.Shaikh@sgs.com',
     emailCC: 'Saqib.Qadeer@sgs.com, export@amrags.com, Muhammad.ShoaibSiddiqui@sgs.com, Syed.Mahboob@sgs.com, imp-exp@amrags.com',
-    emailSubject: (d) => `IDEAS RECYCLING (PVT) LTD, ${d.details.idf} - ${d.commercial.invoice} - ${d.details.consignee} - INSPECTION REQ - ${d.details.inspectionDate}`,
+    emailSubject: (d) => `IDEAS RECYCLING (PVT) LTD, ${d.details.idf} - ${d.commercial.invoice} - ${d.details.consignee} - INSPECTION REQ - ${formatDate(d.details.inspectionDate)}`,
     emailBody: (d) => `Dear Saqib/Fazila,
 
-Please see attached Documents, kindly arrange inspection for ${d.details.inspectionDate}.
+Please see attached Documents, kindly arrange inspection for ${formatDate(d.details.inspectionDate)}.
 Attached - RFC, declaration, IDF & Commercial Invoice.`
   },
   { id: 'p1_fumigation', label: 'Book Fumigation (WhatsApp)', isWhatsApp: true, needsAttachmentCheck: true },
