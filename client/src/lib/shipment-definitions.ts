@@ -45,6 +45,7 @@ export const PHASE_2_TASKS: TaskDefinition[] = [
     emailBody: () => `Please find Commercial Invoice & Packing List attached.` 
   },
   { id: 'p2_attachments', label: 'Docs sent to Agent' },
+  { id: 'p2_fum_cert_verify', label: 'Receive & Verify Fumigation Certificate as per Documents' },
   { id: 'p3a_docs', label: 'Reply to SGS Inspection Thread' },
 ];
 
