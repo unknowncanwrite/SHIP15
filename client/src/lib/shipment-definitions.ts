@@ -93,7 +93,6 @@ export const getForwarderTasks = (data: ShipmentData): TaskDefinition[] => {
 export const getFumigationTasks = (data: ShipmentData): TaskDefinition[] => {
   if (data.fumigation === 'sky-services') {
     return [
-       { id: 'p2_sky_booking', label: 'Sky Services: Book Fumigation' },
        { 
          id: 'p2_sky_docs', 
          label: 'Sky Services: Send Required Docs', 
