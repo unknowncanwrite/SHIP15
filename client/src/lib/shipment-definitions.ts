@@ -20,14 +20,11 @@ export const PHASE_1_TASKS: TaskDefinition[] = [
     needsAttachmentCheck: true,
     emailTo: 'Fazila.Shaikh@sgs.com',
     emailCC: 'Saqib.Qadeer@sgs.com, export@amrags.com, Muhammad.ShoaibSiddiqui@sgs.com, Syed.Mahboob@sgs.com, imp-exp@amrags.com',
-    emailSubject: (d) => `IDEAS RECYCLING (PVT) LTD, ${d.details.idf} - ${d.details.proforma} - ${d.details.consignee} - INSPECTION REQ - ${d.details.inspectionDate}`,
-    emailBody: (d) => `To: Fazila.Shaikh@sgs.com
-CC: Saqib.Qadeer@sgs.com, export@amrags.com, Muhammad.ShoaibSiddiqui@sgs.com, Syed.Mahboob@sgs.com, imp-exp@amrags.com
-
-Dear Saqib/Fazila,
+    emailSubject: (d) => `IDEAS RECYCLING (PVT) LTD, ${d.details.idf} - ${d.commercial.invoice} - ${d.details.consignee} - INSPECTION REQ - ${d.details.inspectionDate}`,
+    emailBody: (d) => `Dear Saqib/Fazila,
 
 Please see attached Documents, kindly arrange inspection for ${d.details.inspectionDate}.
-Attached - RFC, declaration, IDF & Proforma Invoice.`
+Attached - RFC, declaration, IDF & Commercial Invoice.`
   },
   { id: 'p1_fumigation', label: 'Book Fumigation (WhatsApp)', isWhatsApp: true, needsAttachmentCheck: true },
   { id: 'p1_attachments', label: 'Check Attachments' },
