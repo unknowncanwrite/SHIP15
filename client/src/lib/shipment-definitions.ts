@@ -9,10 +9,9 @@ export interface TaskDefinition {
 }
 
 export const PHASE_1_TASKS: TaskDefinition[] = [
-  { id: 'p1_docs', label: 'Prepare Inspection Documents & send to SGS' },
   { 
-    id: 'p1_mail', 
-    label: 'Send Mail to Forwarder', 
+    id: 'p1_docs', 
+    label: 'Prepare Inspection Documents & send to SGS', 
     hasEmail: true, 
     emailSubject: (d) => `Shipment ${d.id} - Docs`, 
     emailBody: (d) => `Please process the attached documents for shipment ${d.id}.` 
