@@ -78,7 +78,6 @@ export const getForwarderTasks = (data: ShipmentData): TaskDefinition[] => {
     : data.manualForwarderName || 'Forwarder';
     
   return [
-    { id: 'p4_confirm_booking', label: `${forwarderName}: Confirm Booking` },
     { id: 'p4_confirm_loading', label: `${forwarderName}: Confirm Loading` },
     { 
       id: 'p4_send_docs', 
