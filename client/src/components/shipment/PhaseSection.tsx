@@ -167,20 +167,6 @@ export default function PhaseSection({
                 )}
                 <div className="space-y-1">
                   <div className="flex items-center justify-between">
-                    <div className="font-bold text-muted-foreground uppercase">Subject:</div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-accent hover:text-accent hover:bg-accent/10"
-                      onClick={() => copyToClipboard(task.emailSubject || '', 'Subject')}
-                    >
-                      <Copy className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  <div className="text-foreground">{task.emailSubject}</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between">
                     <div className="font-bold text-muted-foreground uppercase">Body:</div>
                     <Button
                       variant="ghost"
