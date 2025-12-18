@@ -81,12 +81,7 @@ export const PHASE_3_TASKS: TaskDefinition[] = [
 ];
 
 export const getForwarderTasks = (data: ShipmentData): TaskDefinition[] => {
-  const forwarderName = data.forwarder === 'xpo' 
-    ? 'XPO' 
-    : data.forwarder === 'hmi' 
-    ? 'HMI' 
-    : data.manualForwarderName || 'Forwarder';
-  
+  const forwarderName = data.manualForwarderName || 'Forwarder';
   const isWithInspection = data.shipmentType === 'with-inspection';
   const blDraftLabel = isWithInspection 
     ? 'PREPARE BL DRAFT AS PER INSPECTION DOCUMENTS' 
@@ -100,8 +95,8 @@ export const getForwarderTasks = (data: ShipmentData): TaskDefinition[] => {
     { 
       id: 'p4_send_bl_draft', 
       label: `SEND BL DRAFT TO ${forwarderName} VIA ${data.manualMethod === 'whatsapp' ? 'WHATSAPP' : 'EMAIL'}`,
-      hasEmail: data.manualMethod !== 'whatsapp' || data.forwarder !== 'manual',
-      isWhatsApp: data.manualMethod === 'whatsapp' && data.forwarder === 'manual',
+      hasEmail: data.manualMethod !== 'whatsapp',
+      isWhatsApp: data.manualMethod === 'whatsapp',
       needsAttachmentCheck: true,
       emailSubject: (d) => `Draft Bill of Lading (BL) Attached - ${d.details.container} - ${d.commercial.invoice}`, 
       emailBody: (d) => `Please find attached the draft Bill of Lading (BL).
