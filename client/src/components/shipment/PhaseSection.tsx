@@ -107,24 +107,6 @@ export default function PhaseSection({
                   {isMissed && <div className="text-xs text-warning font-medium">⚠ Skipped</div>}
                 </div>
               </div>
-              
-              {task.hasEmail && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 text-xs text-accent hover:text-accent hover:bg-accent/10"
-                  onClick={() => {
-                    const parts = [];
-                    if (task.emailTo) parts.push(`To: ${task.emailTo}`);
-                    if (task.emailCC) parts.push(`CC: ${task.emailCC}`);
-                    if (task.emailSubject) parts.push(`Subject: ${task.emailSubject}`);
-                    if (task.emailBody) parts.push(`Body:\n${task.emailBody}`);
-                    copyToClipboard(parts.join('\n\n'), 'Email');
-                  }}
-                >
-                  <Copy className="h-3 w-3 mr-1" /> Copy All
-                </Button>
-              )}
             </div>
 
             {task.hasEmail && (
