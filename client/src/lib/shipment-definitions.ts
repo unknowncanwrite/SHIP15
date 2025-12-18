@@ -34,7 +34,8 @@ export const PHASE_1_TASKS: TaskDefinition[] = [
     emailBody: (d) => `Dear Saqib/Fazila,
 
 Please see attached Documents, kindly arrange inspection for ${formatDate(d.details.inspectionDate)}.
-Attached - RFC, declaration, IDF & Commercial Invoice.`
+Attached - RFC, declaration, IDF & Commercial Invoice.`,
+    subTasks: ['Confirm Attachments: RFC, Declaration, IDF & Proforma']
   },
   { id: 'p1_fumigation', label: 'Book Fumigation (WhatsApp)', isWhatsApp: true, needsAttachmentCheck: true, emailTo: 'HASSAN SKY FUMIGATION (03332990665)' },
 ];
