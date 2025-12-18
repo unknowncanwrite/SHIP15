@@ -42,6 +42,7 @@ export default function PhaseSection({
   missedTaskIds = []
 }: PhaseSectionProps) {
   const { toast } = useToast();
+  const [subTaskState, setSubTaskState] = useState<Record<string, boolean>>({});
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -96,12 +97,28 @@ export default function PhaseSection({
                   )}
                   {task.subTasks && task.subTasks.length > 0 && (
                     <div className="text-xs mt-2 ml-0 space-y-1">
-                      {task.subTasks.map((subTask, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-muted-foreground bg-muted/10 p-1.5 rounded">
-                          <span className="text-accent font-bold">✓</span>
-                          <span>{subTask}</span>
-                        </div>
-                      ))}
+                      {task.subTasks.map((subTask, idx) => {
+                        const subTaskKey = `${task.id}-subtask-${idx}`;
+                        return (
+                          <div key={idx} className="flex items-center gap-2">
+                            <Checkbox 
+                              id={subTaskKey}
+                              checked={subTaskState[subTaskKey] || false}
+                              onCheckedChange={() => setSubTaskState(prev => ({
+                                ...prev,
+                                [subTaskKey]: !prev[subTaskKey]
+                              }))}
+                              className="h-4 w-4"
+                            />
+                            <Label 
+                              htmlFor={subTaskKey}
+                              className="text-xs font-medium cursor-pointer text-muted-foreground"
+                            >
+                              {subTask}
+                            </Label>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                   {isMissed && <div className="text-xs text-warning font-medium">⚠ Skipped</div>}
