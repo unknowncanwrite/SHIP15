@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useShipmentStore } from '@/lib/store';
 import { calculateProgress } from '@/lib/shipment-utils';
 import ShipmentCard from './ShipmentCard';
+import NotesTable from './NotesTable';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -170,6 +171,11 @@ export default function Dashboard() {
               </Button>
             </div>
           </div>
+        </div>
+
+        {/* Notes Section */}
+        <div className="mt-12">
+          <NotesTable />
         </div>
 
         {/* Grid */}
