@@ -1,22 +1,14 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/node-postgres";
+import pg from "pg";
 import * as schema from "@shared/schema";
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const { Pool } = pg;
 
-if (!supabaseUrl || !supabaseServiceRoleKey) {
+if (!process.env.DATABASE_URL) {
   throw new Error(
-    "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables must be set"
+    "DATABASE_URL must be set. Did you forget to provision a database?",
   );
 }
 
-// Parse Supabase URL to extract connection details
-const urlObj = new URL(supabaseUrl);
-const projectId = urlObj.hostname.split('.')[0];
-
-// Create connection string for Supabase
-const connectionString = `postgresql://postgres.${projectId}:${supabaseServiceRoleKey}@aws-0-us-east-1.pooler.supabase.com:6543/postgres?sslmode=require`;
-
-const client = postgres(connectionString);
-export const db = drizzle(client, { schema });
+export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+export const db = drizzle(pool, { schema });
