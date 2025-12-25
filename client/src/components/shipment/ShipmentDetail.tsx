@@ -228,7 +228,7 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
 
   // Action helpers using mutation API
   const toggleChecklist = (id: string, key: string) => {
-    const newChecklist = { ...currentShipment.checklist, [key]: !currentShipment.checklist[key] };
+    const newChecklist = { ...(currentShipment.checklist || {}), [key]: !(currentShipment.checklist || {})[key] };
     updateShipment.mutate({ id, data: { checklist: newChecklist } });
   };
 
