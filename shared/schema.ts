@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, jsonb, bigint, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, jsonb, bigint, boolean, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -66,6 +66,18 @@ export const notes = pgTable("notes", {
   createdAt: bigint("created_at", { mode: "number" }).notNull(),
 });
 
+// Audit Log table
+export const auditLogs = pgTable("audit_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  shipmentId: varchar("shipment_id").notNull(),
+  action: varchar("action").notNull(), // 'create', 'update', 'delete'
+  fieldName: text("field_name"), // e.g., 'details.customer', 'customTasks', etc.
+  oldValue: text("old_value"), // JSON stringified previous value
+  newValue: text("new_value"), // JSON stringified new value
+  summary: text("summary").notNull(), // Human-readable summary
+  timestamp: bigint("timestamp", { mode: "number" }).notNull(),
+});
+
 // Insert schemas - make all fields optional except required ones
 export const insertShipmentSchema = createInsertSchema(shipments, {
   createdAt: z.number().optional(),
@@ -89,8 +101,19 @@ export const insertNoteSchema = createInsertSchema(notes, {
   createdAt: true,
 });
 
+// Audit log schemas
+export const insertAuditLogSchema = createInsertSchema(auditLogs, {
+  id: z.string().optional(),
+  timestamp: z.number().optional(),
+}).omit({
+  id: true,
+  timestamp: true,
+});
+
 // Types
 export type InsertShipment = z.infer<typeof insertShipmentSchema>;
 export type Shipment = typeof shipments.$inferSelect;
 export type InsertNote = z.infer<typeof insertNoteSchema>;
 export type Note = typeof notes.$inferSelect;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;

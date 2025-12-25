@@ -1,4 +1,4 @@
-import { shipments, notes, type Shipment, type InsertShipment, type Note, type InsertNote } from "@shared/schema";
+import { shipments, notes, auditLogs, type Shipment, type InsertShipment, type Note, type InsertNote, type AuditLog, type InsertAuditLog } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -9,6 +9,10 @@ export interface IStorage {
   createShipment(shipment: InsertShipment): Promise<Shipment>;
   updateShipment(id: string, shipment: Partial<InsertShipment>): Promise<Shipment | undefined>;
   deleteShipment(id: string): Promise<boolean>;
+  
+  // Audit log operations
+  getAuditLogs(shipmentId: string): Promise<AuditLog[]>;
+  createAuditLog(log: InsertAuditLog): Promise<AuditLog>;
   
   // Note operations
   getAllNotes(): Promise<Note[]>;
@@ -56,6 +60,22 @@ export class DatabaseStorage implements IStorage {
   async deleteShipment(id: string): Promise<boolean> {
     const result = await db.delete(shipments).where(eq(shipments.id, id)).returning();
     return result.length > 0;
+  }
+
+  // Audit log operations
+  async getAuditLogs(shipmentId: string): Promise<AuditLog[]> {
+    return await db.select().from(auditLogs).where(eq(auditLogs.shipmentId, shipmentId)).orderBy(desc(auditLogs.timestamp));
+  }
+
+  async createAuditLog(log: InsertAuditLog): Promise<AuditLog> {
+    const [created] = await db
+      .insert(auditLogs)
+      .values({
+        ...log,
+        timestamp: Date.now(),
+      })
+      .returning();
+    return created;
   }
 
   // Note operations

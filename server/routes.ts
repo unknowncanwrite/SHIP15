@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertShipmentSchema, insertNoteSchema } from "@shared/schema";
+import { insertShipmentSchema, insertNoteSchema, type Shipment } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(
@@ -66,11 +66,10 @@ export async function registerRoutes(
   // Update shipment
   app.patch("/api/shipments/:id", async (req, res) => {
     try {
-      // For updates, we don't validate the entire schema since it's partial
-      // but we ensure documents array is properly formatted if present
+      const oldShipment = await storage.getShipment(req.params.id);
+      
       let updateData = req.body;
       if (updateData.documents && Array.isArray(updateData.documents)) {
-        // Ensure each document has required fields
         updateData.documents = updateData.documents.map((doc: any) => ({
           id: doc.id || Math.random().toString(36).substr(2, 9),
           name: doc.name || 'Untitled Document',
@@ -82,6 +81,36 @@ export async function registerRoutes(
       if (!shipment) {
         return res.status(404).json({ error: "Shipment not found" });
       }
+
+      // Log changes to audit trail
+      if (oldShipment) {
+        Object.entries(updateData).forEach(([key, newVal]) => {
+          const oldVal = (oldShipment as any)[key];
+          if (JSON.stringify(oldVal) !== JSON.stringify(newVal)) {
+            const summaryMap: Record<string, string> = {
+              'customTasks': 'Modified custom tasks',
+              'shipmentChecklist': 'Modified todo list',
+              'checklist': 'Modified checklist',
+              'documents': 'Modified documents',
+              'details': 'Updated shipment details',
+              'commercial': 'Updated commercial details',
+              'actual': 'Updated actual details',
+              'shipmentType': 'Changed shipment type',
+              'manualForwarderName': 'Changed forwarder',
+              'manualFumigationName': 'Changed fumigation provider',
+            };
+            storage.createAuditLog({
+              shipmentId: req.params.id,
+              action: 'update',
+              fieldName: key,
+              oldValue: JSON.stringify(oldVal),
+              newValue: JSON.stringify(newVal),
+              summary: summaryMap[key] || `Updated ${key}`,
+            });
+          }
+        });
+      }
+
       res.json(shipment);
     } catch (error) {
       console.error("Error updating shipment:", error);
@@ -156,6 +185,19 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error deleting note:", error);
       res.status(500).json({ error: "Failed to delete note" });
+    }
+  });
+
+  // ============ AUDIT LOG ROUTES ============
+  
+  // Get audit logs for a shipment
+  app.get("/api/shipments/:id/audit-logs", async (req, res) => {
+    try {
+      const logs = await storage.getAuditLogs(req.params.id);
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching audit logs:", error);
+      res.status(500).json({ error: "Failed to fetch audit logs" });
     }
   });
 
