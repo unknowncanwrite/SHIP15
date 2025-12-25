@@ -55,6 +55,7 @@ export const shipments = pgTable("shipments", {
   customTasks: jsonb("custom_tasks").notNull().$type<Array<{ id: string; text: string; completed: boolean }>>(),
   documents: jsonb("documents").notNull().$type<Array<{ id: string; name: string; file: string; createdAt: number }>>(),
   checklist: jsonb("checklist").notNull().$type<Record<string, boolean>>(),
+  shipmentChecklist: jsonb("shipment_checklist").notNull().$type<Array<{ id: string; item: string; completed: boolean }>>(),
 });
 
 // Notes table
@@ -75,6 +76,7 @@ export const insertShipmentSchema = createInsertSchema(shipments, {
   customTasks: z.any().optional().default([]),
   documents: z.any().optional().default([]),
   checklist: z.any().optional().default({}),
+  shipmentChecklist: z.any().optional().default([]),
 }).partial().required({
   id: true,
 });

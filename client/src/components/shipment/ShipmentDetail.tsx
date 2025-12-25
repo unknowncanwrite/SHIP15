@@ -40,8 +40,8 @@ const useDebouncedSave = (value: string, delay: number, onSave: (val: string) =>
 
 // Sub-component that safely receives non-null shipment data
 function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShipment: Shipment }) {
-  // Ensure currentShipment always has documents
-  const currentShipment = { ...inputShipment, documents: inputShipment.documents || [] };
+  // Ensure currentShipment always has documents and shipmentChecklist
+  const currentShipment = { ...inputShipment, documents: inputShipment.documents || [], shipmentChecklist: inputShipment.shipmentChecklist || [] };
   
   const [_, setLocation] = useLocation();
   const updateShipment = useUpdateShipment();
@@ -246,6 +246,30 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
   const deleteDocument = (id: string, documentId: string) => {
     const newDocuments = currentShipment.documents.filter(d => d.id !== documentId);
     updateShipment.mutate({ id, data: { documents: newDocuments } });
+  };
+
+  const toggleShipmentChecklistItem = (id: string, itemId: string) => {
+    const newShipmentChecklist = currentShipment.shipmentChecklist.map(item => 
+      item.id === itemId ? { ...item, completed: !item.completed } : item
+    );
+    updateShipment.mutate({ id, data: { shipmentChecklist: newShipmentChecklist } });
+  };
+
+  const addShipmentChecklistItem = (id: string, itemText: string) => {
+    const newItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      item: itemText,
+      completed: false,
+    };
+    updateShipment.mutate({ 
+      id, 
+      data: { shipmentChecklist: [...(currentShipment.shipmentChecklist || []), newItem] } 
+    });
+  };
+
+  const deleteShipmentChecklistItem = (id: string, itemId: string) => {
+    const newShipmentChecklist = currentShipment.shipmentChecklist.filter(item => item.id !== itemId);
+    updateShipment.mutate({ id, data: { shipmentChecklist: newShipmentChecklist } });
   };
 
   // Countdown Logic
@@ -771,6 +795,74 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
 
             {/* Right Sidebar Column */}
             <div className="md:col-span-1 space-y-6">
+                {/* Shipment Check List */}
+                <div className="bg-card p-4 rounded-lg border shadow-sm">
+                    <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">Shipment Check List</h3>
+                    
+                    <div className="space-y-2">
+                        {(currentShipment.shipmentChecklist || []).length > 0 ? (
+                            (currentShipment.shipmentChecklist || []).map((item) => (
+                                <div key={item.id} className="flex items-center justify-between group p-2 rounded-md hover:bg-muted/50 transition-colors">
+                                    <div className="flex items-center space-x-3">
+                                        <Checkbox 
+                                            id={`shipment-${item.id}`}
+                                            checked={item.completed}
+                                            onCheckedChange={() => toggleShipmentChecklistItem(currentShipment.id, item.id)}
+                                        />
+                                        <Label 
+                                            htmlFor={`shipment-${item.id}`}
+                                            className={`text-sm leading-none cursor-pointer ${
+                                                item.completed ? 'text-muted-foreground line-through decoration-muted-foreground/50' : ''
+                                            }`}
+                                        >
+                                            {item.item}
+                                        </Label>
+                                    </div>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-6 w-6 text-destructive opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                                        onClick={() => deleteShipmentChecklistItem(currentShipment.id, item.id)}
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </Button>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-3 text-muted-foreground text-xs italic">
+                                No checklist items yet.
+                            </div>
+                        )}
+
+                        <div className="pt-2 border-t flex gap-2">
+                            <Input 
+                                placeholder="Add item..." 
+                                value={newTaskInput}
+                                onChange={(e) => setNewTaskInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && newTaskInput.trim()) {
+                                    addShipmentChecklistItem(currentShipment.id, newTaskInput.trim());
+                                    setNewTaskInput('');
+                                  }
+                                }}
+                                className="h-7 text-xs"
+                            />
+                            <Button 
+                              size="icon"
+                              onClick={() => {
+                                if (newTaskInput.trim()) {
+                                  addShipmentChecklistItem(currentShipment.id, newTaskInput.trim());
+                                  setNewTaskInput('');
+                                }
+                              }}
+                              className="flex-shrink-0"
+                            >
+                                <Plus className="h-3 w-3" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
                 {/* Shipment Documents */}
                 <div className="bg-card p-4 rounded-lg border shadow-sm">
                     <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">Shipment Documents</h3>
@@ -870,63 +962,6 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
                     <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={() => handlePrint('shoes')}>
                         <Printer className="h-4 w-4" /> Shoes Undertaking
                     </Button>
-                </div>
-
-                {/* Custom Task Checklist */}
-                <div className="bg-card p-4 rounded-lg border shadow-sm">
-                    <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">Custom Checklist</h3>
-                    
-                    <div className="space-y-2 mb-3">
-                        {currentShipment.customTasks.length > 0 ? (
-                            currentShipment.customTasks.map((task) => (
-                                <div key={task.id} className="flex items-center gap-2 p-2 bg-muted/20 rounded-md border group hover:bg-muted/30 transition-colors">
-                                    <button
-                                        onClick={() => toggleCustomTask(currentShipment.id, task.id)}
-                                        className={`flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                                            task.completed 
-                                                ? 'bg-primary border-primary' 
-                                                : 'border-muted-foreground hover:border-primary'
-                                        }`}
-                                    >
-                                        {task.completed && <Check className="h-3 w-3 text-primary-foreground" />}
-                                    </button>
-                                    <span className={`text-xs flex-1 min-w-0 truncate ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
-                                        {task.text}
-                                    </span>
-                                    <button
-                                        onClick={() => deleteCustomTask(currentShipment.id, task.id)}
-                                        className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-destructive"
-                                    >
-                                        <X className="h-3 w-3" />
-                                    </button>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-center py-3 text-muted-foreground text-xs italic">
-                                No custom tasks yet.
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex gap-1">
-                        <input
-                            type="text"
-                            value={newTaskInput}
-                            onChange={(e) => setNewTaskInput(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleAddCustomTask()}
-                            placeholder="Add task..."
-                            className="flex-1 h-7 px-2 text-xs rounded border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring"
-                            data-testid="input-new-task"
-                        />
-                        <Button 
-                            size="icon" 
-                            className="h-7 w-7" 
-                            onClick={handleAddCustomTask}
-                            data-testid="button-add-task"
-                        >
-                            <Plus className="h-3 w-3" />
-                        </Button>
-                    </div>
                 </div>
             </div>
         </div>

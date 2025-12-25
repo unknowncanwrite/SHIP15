@@ -48,6 +48,9 @@ export interface ShipmentData {
   // --- Checklist State (Boolean Map) ---
   // Must support ALL phases logic
   checklist: Record<string, boolean>;
+
+  // --- Shipment Check List ---
+  shipmentChecklist: Array<{ id: string; item: string; completed: boolean }>;
 }
 
 export const initialShipmentData: ShipmentData = {
@@ -93,4 +96,5 @@ export const initialShipmentData: ShipmentData = {
   customTasks: [],
   documents: [],
   checklist: {},
+  shipmentChecklist: [],
 };
