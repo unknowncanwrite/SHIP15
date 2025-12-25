@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Save, Trash2, Printer, Moon, Sun, Clock, AlertCircle, Plus, X, Download, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Trash2, Printer, Moon, Sun, Clock, AlertCircle, Plus, X, Download, Loader2, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import PhaseSection from './PhaseSection';
 import DonutProgress from './DonutProgress';
@@ -50,6 +50,8 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
   const { theme, setTheme } = useTheme();
   const [newTaskInput, setNewTaskInput] = useState('');
   const [newDocName, setNewDocName] = useState('');
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   
   const isSaving = updateShipment.isPending;
   
@@ -152,6 +154,7 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
     if (!file) return;
     
     if (file.type !== 'application/pdf') {
+      setUploadError('Please upload a PDF file only.');
       toast({
         title: "Invalid File",
         description: "Please upload a PDF file only.",
@@ -160,29 +163,65 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
       return;
     }
 
+    setUploadProgress(0);
+    setUploadError(null);
+
     const reader = new FileReader();
+    
+    reader.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const percentComplete = Math.round((event.loaded / event.total) * 100);
+        setUploadProgress(percentComplete);
+      }
+    };
+
     reader.onload = (event) => {
-      const fileContent = event.target?.result as string;
-      // Remove the data URL prefix to store just the base64 content
-      const base64Content = fileContent.replace(/^data:application\/pdf;base64,/, '');
-      const docName = newDocName.trim() || file.name.replace('.pdf', '');
-      const newDocument = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: docName,
-        file: base64Content,
-        createdAt: Date.now(),
-      };
-      updateShipment.mutate({
-        id: currentShipment.id,
-        data: { documents: [...currentShipment.documents, newDocument] }
-      });
-      setNewDocName('');
-      (e.target as HTMLInputElement).value = '';
+      try {
+        const fileContent = event.target?.result as string;
+        // Remove the data URL prefix to store just the base64 content
+        const base64Content = fileContent.replace(/^data:application\/pdf;base64,/, '');
+        const docName = newDocName.trim() || file.name.replace('.pdf', '');
+        const newDocument = {
+          id: Math.random().toString(36).substr(2, 9),
+          name: docName,
+          file: base64Content,
+          createdAt: Date.now(),
+        };
+        updateShipment.mutate({
+          id: currentShipment.id,
+          data: { documents: [...currentShipment.documents, newDocument] }
+        });
+        setNewDocName('');
+        (e.target as HTMLInputElement).value = '';
+        setUploadProgress(100);
+        setTimeout(() => {
+          setUploadProgress(null);
+          toast({
+            title: "Document Uploaded",
+            description: `${docName} has been added to this shipment.`,
+          });
+        }, 300);
+      } catch (error) {
+        setUploadError('Error uploading file');
+        setUploadProgress(null);
+        toast({
+          title: "Upload Failed",
+          description: "An error occurred while uploading the file.",
+          variant: "destructive"
+        });
+      }
+    };
+
+    reader.onerror = () => {
+      setUploadError('Error reading file');
+      setUploadProgress(null);
       toast({
-        title: "Document Uploaded",
-        description: `${docName} has been added to this shipment.`,
+        title: "Upload Failed",
+        description: "An error occurred while reading the file.",
+        variant: "destructive"
       });
     };
+
     reader.readAsDataURL(file);
   };
 
@@ -807,17 +846,32 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
                                 value={newDocName}
                                 onChange={(e) => setNewDocName(e.target.value)}
                                 className="h-7 text-xs"
+                                disabled={uploadProgress !== null}
                             />
-                            <label className="flex items-center justify-center gap-1 p-2 border-2 border-dashed rounded-md cursor-pointer hover:bg-muted/30 transition-colors">
-                                <Plus className="h-3 w-3" />
-                                <span className="text-xs font-medium">Upload PDF</span>
-                                <input 
-                                    type="file" 
-                                    accept=".pdf" 
-                                    onChange={handleFileUpload}
-                                    className="hidden"
-                                />
-                            </label>
+                            {uploadProgress !== null ? (
+                                <div className="space-y-1">
+                                    <div className="flex items-center justify-between text-xs">
+                                        <span className="text-muted-foreground">Uploading...</span>
+                                        <span className="font-semibold">{uploadProgress}%</span>
+                                    </div>
+                                    <Progress value={uploadProgress} className="h-1" />
+                                </div>
+                            ) : uploadError ? (
+                                <div className="p-2 bg-destructive/10 border border-destructive/30 rounded-md text-xs text-destructive">
+                                    {uploadError}
+                                </div>
+                            ) : (
+                                <label className="flex items-center justify-center gap-1 p-2 border-2 border-dashed rounded-md cursor-pointer hover:bg-muted/30 transition-colors">
+                                    <Plus className="h-3 w-3" />
+                                    <span className="text-xs font-medium">Upload PDF</span>
+                                    <input 
+                                        type="file" 
+                                        accept=".pdf" 
+                                        onChange={handleFileUpload}
+                                        className="hidden"
+                                    />
+                                </label>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -834,6 +888,63 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
                     <Button variant="outline" size="sm" className="w-full justify-start gap-2" onClick={() => handlePrint('shoes')}>
                         <Printer className="h-4 w-4" /> Shoes Undertaking
                     </Button>
+                </div>
+
+                {/* Custom Task Checklist */}
+                <div className="bg-card p-4 rounded-lg border shadow-sm">
+                    <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">Custom Checklist</h3>
+                    
+                    <div className="space-y-2 mb-3">
+                        {currentShipment.customTasks.length > 0 ? (
+                            currentShipment.customTasks.map((task) => (
+                                <div key={task.id} className="flex items-center gap-2 p-2 bg-muted/20 rounded-md border group hover:bg-muted/30 transition-colors">
+                                    <button
+                                        onClick={() => toggleCustomTask(currentShipment.id, task.id)}
+                                        className={`flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                                            task.completed 
+                                                ? 'bg-primary border-primary' 
+                                                : 'border-muted-foreground hover:border-primary'
+                                        }`}
+                                    >
+                                        {task.completed && <Check className="h-3 w-3 text-primary-foreground" />}
+                                    </button>
+                                    <span className={`text-xs flex-1 min-w-0 truncate ${task.completed ? 'line-through text-muted-foreground' : ''}`}>
+                                        {task.text}
+                                    </span>
+                                    <button
+                                        onClick={() => deleteCustomTask(currentShipment.id, task.id)}
+                                        className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:text-destructive"
+                                    >
+                                        <X className="h-3 w-3" />
+                                    </button>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-3 text-muted-foreground text-xs italic">
+                                No custom tasks yet.
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex gap-1">
+                        <input
+                            type="text"
+                            value={newTaskInput}
+                            onChange={(e) => setNewTaskInput(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleAddCustomTask()}
+                            placeholder="Add task..."
+                            className="flex-1 h-7 px-2 text-xs rounded border border-input bg-background focus:outline-none focus:ring-1 focus:ring-ring"
+                            data-testid="input-new-task"
+                        />
+                        <Button 
+                            size="icon" 
+                            className="h-7 w-7" 
+                            onClick={handleAddCustomTask}
+                            data-testid="button-add-task"
+                        >
+                            <Plus className="h-3 w-3" />
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
