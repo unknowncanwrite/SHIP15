@@ -45,4 +45,6 @@ integrations = ["javascript_database:1.0.0"]
 [userenv]
 
 [userenv.shared]
-GITHUB_REPO_NAME = "unknowncanwrite"
+GITHUB_REPO_NAME = "ship"
+GITHUB_USERNAME = "unknowncanwrite"
+GITHUB_TOKEN = "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"
