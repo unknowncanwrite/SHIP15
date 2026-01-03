@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Eye } from "lucide-react";
+import { Copy, Eye, X, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -135,62 +136,92 @@ export default function PhaseSection({
                   </div>
 
                   {task.id === 'p4_final_bl' && remarksData && (
-                    <div className="mt-3 p-3 bg-card border rounded-md shadow-sm space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Remarks</span>
-                        <Badge variant="outline" className="text-[10px] h-4">{remarksData.list.length}</Badge>
+                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Subtasks on the left */}
+                      <div className="space-y-1">
+                        <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">Checklist</div>
+                        {task.subTasks && task.subTasks.map((subTask, idx) => {
+                          const subTaskKey = `${task.id}-subtask-${idx}`;
+                          return (
+                            <div key={idx} className="flex items-center gap-2">
+                              <Checkbox 
+                                id={subTaskKey}
+                                checked={subTaskState[subTaskKey] || false}
+                                onCheckedChange={() => setSubTaskState(prev => ({
+                                  ...prev,
+                                  [subTaskKey]: !prev[subTaskKey]
+                                }))}
+                                className="h-3.5 w-3.5"
+                              />
+                              <Label 
+                                htmlFor={subTaskKey}
+                                className="text-xs font-medium cursor-pointer text-muted-foreground"
+                              >
+                                {subTask}
+                              </Label>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
-                        {remarksData.list.map((item: any) => (
-                          <div key={item.id} className="flex items-start gap-2 group">
-                            <Checkbox 
-                              id={`remark-${item.id}`} 
-                              checked={item.completed} 
-                              onCheckedChange={() => remarksData.onToggle(item.id)}
-                              className="mt-0.5 h-3.5 w-3.5"
-                            />
-                            <Label 
-                              htmlFor={`remark-${item.id}`} 
-                              className={`text-xs flex-1 break-words cursor-pointer ${item.completed ? 'text-muted-foreground line-through' : ''}`}
-                            >
-                              {item.item}
-                            </Label>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-4 w-4 opacity-0 group-hover:opacity-100 text-destructive p-0"
-                              onClick={() => remarksData.onDelete(item.id)}
-                            >
-                              <X className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="flex gap-2">
-                        <Input 
-                          placeholder="New remark..." 
-                          value={remarksData.input}
-                          onChange={(e) => remarksData.setInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              remarksData.onAdd(remarksData.input);
-                            }
-                          }}
-                          className="h-7 text-xs"
-                        />
-                        <Button 
-                          size="icon" 
-                          variant="outline" 
-                          className="h-7 w-7"
-                          onClick={() => remarksData.onAdd(remarksData.input)}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
+
+                      {/* Remarks on the right */}
+                      <div className="p-3 bg-card border rounded-md shadow-sm space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Remarks</span>
+                          <Badge variant="outline" className="text-[10px] h-4">{remarksData.list.length}</Badge>
+                        </div>
+                        <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
+                          {remarksData.list.map((item: any) => (
+                            <div key={item.id} className="flex items-start gap-2 group">
+                              <Checkbox 
+                                id={`remark-${item.id}`} 
+                                checked={item.completed} 
+                                onCheckedChange={() => remarksData.onToggle(item.id)}
+                                className="mt-0.5 h-3.5 w-3.5"
+                              />
+                              <Label 
+                                htmlFor={`remark-${item.id}`} 
+                                className={`text-xs flex-1 break-words cursor-pointer ${item.completed ? 'text-muted-foreground line-through' : ''}`}
+                              >
+                                {item.item}
+                              </Label>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-4 w-4 opacity-0 group-hover:opacity-100 text-destructive p-0"
+                                onClick={() => remarksData.onDelete(item.id)}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="flex gap-2">
+                          <Input 
+                            placeholder="New remark..." 
+                            value={remarksData.input}
+                            onChange={(e) => remarksData.setInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                remarksData.onAdd(remarksData.input);
+                              }
+                            }}
+                            className="h-7 text-xs"
+                          />
+                          <Button 
+                            size="icon" 
+                            variant="outline" 
+                            className="h-7 w-7"
+                            onClick={() => remarksData.onAdd(remarksData.input)}
+                          >
+                            <Plus className="h-3 w-3" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   )}
 
-                  {isHighlighted && (
+                  {task.id !== 'p4_final_bl' && task.subTasks && task.subTasks.length > 0 && (
                     <div className="text-sm mt-1 bg-accent/20 text-foreground p-2 rounded border border-accent/30">
                       Health Cert, Fumigation Cert, CI, PL, Declaration of Origin, Used Clothing & Shoes Undertakings
                     </div>
@@ -216,7 +247,7 @@ export default function PhaseSection({
                       </div>
                     </div>
                   )}
-                  {task.subTasks && task.subTasks.length > 0 && (
+                  {task.id !== 'p4_final_bl' && task.subTasks && task.subTasks.length > 0 && (
                     <div className="text-xs mt-2 ml-0 space-y-1">
                       {task.subTasks.map((subTask, idx) => {
                         const subTaskKey = `${task.id}-subtask-${idx}`;
