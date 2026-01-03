@@ -117,12 +117,18 @@ export default function NotesTable({ open, onOpenChange }: NotesTableProps) {
                           value={editValues[note.id]?.name ?? note.name}
                           onChange={(e) => handleUpdateNote(note.id, 'name', e.target.value)}
                           onBlur={() => handleBlur(note.id)}
-                          className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 font-medium text-foreground placeholder-muted-foreground resize-none overflow-hidden min-h-[1.5rem]"
+                          className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 font-medium text-foreground placeholder-muted-foreground resize-none min-h-[1.5rem]"
                           placeholder="Name..."
                           onInput={(e) => {
                             const target = e.target as HTMLTextAreaElement;
                             target.style.height = 'auto';
                             target.style.height = target.scrollHeight + 'px';
+                          }}
+                          ref={(el) => {
+                            if (el) {
+                              el.style.height = 'auto';
+                              el.style.height = el.scrollHeight + 'px';
+                            }
                           }}
                           rows={1}
                         />
@@ -133,12 +139,18 @@ export default function NotesTable({ open, onOpenChange }: NotesTableProps) {
                             value={editValues[note.id]?.notes ?? note.notes}
                             onChange={(e) => handleUpdateNote(note.id, 'notes', e.target.value)}
                             onBlur={() => handleBlur(note.id)}
-                            className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-foreground placeholder-muted-foreground resize-none overflow-hidden min-h-[1.5rem]"
+                            className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-foreground placeholder-muted-foreground resize-none min-h-[1.5rem]"
                             placeholder="Notes..."
                             onInput={(e) => {
                               const target = e.target as HTMLTextAreaElement;
                               target.style.height = 'auto';
                               target.style.height = target.scrollHeight + 'px';
+                            }}
+                            ref={(el) => {
+                              if (el) {
+                                el.style.height = 'auto';
+                                el.style.height = el.scrollHeight + 'px';
+                              }
                             }}
                             rows={1}
                           />

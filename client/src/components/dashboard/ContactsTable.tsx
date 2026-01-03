@@ -115,13 +115,19 @@ export default function ContactsTable({ open, onOpenChange }: ContactsTableProps
                           value={editValues[contact.id]?.name ?? contact.name}
                           onChange={(e) => handleUpdateContact(contact.id, 'name', e.target.value)}
                           onBlur={() => handleBlur(contact.id)}
-                          className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 font-medium text-foreground placeholder-muted-foreground resize-none overflow-hidden min-h-[1.5rem]"
+                          className="w-full bg-transparent border-0 focus:outline-none focus:ring-0 font-medium text-foreground placeholder-muted-foreground resize-none min-h-[1.5rem]"
                           placeholder="Name..."
                           data-testid={`input-contact-name-${contact.id}`}
                           onInput={(e) => {
                             const target = e.target as HTMLTextAreaElement;
                             target.style.height = 'auto';
                             target.style.height = target.scrollHeight + 'px';
+                          }}
+                          ref={(el) => {
+                            if (el) {
+                              el.style.height = 'auto';
+                              el.style.height = el.scrollHeight + 'px';
+                            }
                           }}
                           rows={1}
                         />
@@ -132,13 +138,19 @@ export default function ContactsTable({ open, onOpenChange }: ContactsTableProps
                             value={editValues[contact.id]?.details ?? contact.details}
                             onChange={(e) => handleUpdateContact(contact.id, 'details', e.target.value)}
                             onBlur={() => handleBlur(contact.id)}
-                            className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-foreground placeholder-muted-foreground resize-none overflow-hidden min-h-[1.5rem]"
+                            className="flex-1 bg-transparent border-0 focus:outline-none focus:ring-0 text-foreground placeholder-muted-foreground resize-none min-h-[1.5rem]"
                             placeholder="Details..."
                             data-testid={`input-contact-details-${contact.id}`}
                             onInput={(e) => {
                               const target = e.target as HTMLTextAreaElement;
                               target.style.height = 'auto';
                               target.style.height = target.scrollHeight + 'px';
+                            }}
+                            ref={(el) => {
+                              if (el) {
+                                el.style.height = 'auto';
+                                el.style.height = el.scrollHeight + 'px';
+                              }
                             }}
                             rows={1}
                           />
