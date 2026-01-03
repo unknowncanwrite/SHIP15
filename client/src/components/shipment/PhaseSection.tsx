@@ -1,28 +1,3 @@
-import { useState } from "react";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Copy, Eye } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-
-interface Task {
-  id: string;
-  label: string;
-  hasEmail?: boolean;
-  emailSubject?: string;
-  emailBody?: string;
-  emailTo?: string;
-  emailCC?: string;
-  isWhatsApp?: boolean;
-  whatsappBody?: string;
-  needsAttachmentCheck?: boolean;
-  note?: string;
-  subTasks?: string[];
-  hideSubject?: boolean;
-}
-
 import { useState, useEffect } from "react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
