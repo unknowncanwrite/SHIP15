@@ -12,15 +12,15 @@ export const printDeclaration = (data: ShipmentData) => {
     <head>
       <title>Declaration - ${data.id}</title>
       <style>
-        body { font-family: 'Times New Roman', serif; padding: 40px; line-height: 1.6; max-width: 850px; margin: 0 auto; position: relative; }
-        .date { text-align: right; margin-bottom: 40px; font-size: 12pt; }
+        body { font-family: 'Times New Roman', serif; padding: 250px 40px 50px 40px; line-height: 1.6; max-width: 850px; margin: 0 auto; margin-top: 100px; }
+        .date { text-align: right; margin-bottom: 100px; font-size: 12pt; }
         .spacer-before { height: 20px; }
         h1 { text-align: center; text-decoration: underline; margin: 20px 0; font-size: 16pt; letter-spacing: 1px; }
         .declaration-text { text-align: justify; margin: 30px 0; line-height: 1.7; font-size: 11pt; }
-        .details-section { margin-top: 40px; margin-bottom: 40px; }
+        .details-section { margin-top: 40px; margin-bottom: 60px; }
         .detail-line { margin: 8px 0; font-size: 11pt; }
-        .company-name { text-align: left; margin-top: 60px; font-size: 12pt; }
-        @media print { body { padding: 40px; } }
+        .company-name { text-align: left; margin-top: 100px; font-size: 12pt; }
+        @media print { body { padding: 20px; } }
       </style>
     </head>
     <body>
@@ -56,7 +56,7 @@ export const printUndertaking = (data: ShipmentData) => {
     <head>
       <title>Undertaking - ${data.id}</title>
       <style>
-        body { font-family: 'Times New Roman', serif; padding: 40px; line-height: 1.6; max-width: 800px; margin: 0 auto; }
+        body { font-family: 'Times New Roman', serif; padding: 250px 40px 50px 40px; line-height: 1.6; max-width: 800px; margin: 0 auto; margin-top: 100px; }
         .date { text-align: left; margin-bottom: 30px; font-size: 11pt; }
         .recipient { margin-bottom: 30px; font-size: 11pt; }
         .subject { text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 30px; font-size: 12pt; }
@@ -68,7 +68,7 @@ export const printUndertaking = (data: ShipmentData) => {
         .detail-line { margin-bottom: 5px; }
         .footer { margin-top: 60px; font-size: 11pt; }
         .regards { margin-bottom: 40px; }
-        @media print { body { padding: 40px; } }
+        @media print { body { padding: 20px; } }
       </style>
     </head>
     <body>
@@ -119,7 +119,7 @@ export const printShoesUndertaking = (data: ShipmentData) => {
     <head>
       <title>Shoes Undertaking - ${data.id}</title>
       <style>
-        body { font-family: 'Times New Roman', serif; padding: 40px; line-height: 1.6; max-width: 800px; margin: 0 auto; }
+        body { font-family: 'Times New Roman', serif; padding: 250px 40px 50px 40px; line-height: 1.6; max-width: 800px; margin: 0 auto; margin-top: 100px; }
         .date { text-align: left; margin-bottom: 30px; font-size: 11pt; }
         .recipient { margin-bottom: 30px; font-size: 11pt; }
         .subject { text-align: center; font-weight: bold; text-decoration: underline; margin-bottom: 30px; font-size: 12pt; }
@@ -128,7 +128,7 @@ export const printShoesUndertaking = (data: ShipmentData) => {
         .detail-line { margin-bottom: 5px; }
         .footer { margin-top: 60px; font-size: 11pt; }
         .regards { margin-bottom: 40px; }
-        @media print { body { padding: 40px; } }
+        @media print { body { padding: 20px; } }
       </style>
     </head>
     <body>
