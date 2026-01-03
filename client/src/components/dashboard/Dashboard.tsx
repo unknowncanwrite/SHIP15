@@ -75,15 +75,6 @@ export default function Dashboard() {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setIsNotesOpen(true)}
-              title="Open Notes"
-            >
-              <BookOpen className="h-4 w-4" />
-            </Button>
-
             <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
@@ -208,9 +199,6 @@ export default function Dashboard() {
           </div>
         )}
       </main>
-
-      {/* Notes Drawer */}
-      <NotesTable open={isNotesOpen} onOpenChange={setIsNotesOpen} />
     </div>
   );
 }
