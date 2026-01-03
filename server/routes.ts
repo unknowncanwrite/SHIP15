@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertShipmentSchema, insertNoteSchema, type Shipment } from "@shared/schema";
+import { insertShipmentSchema, insertNoteSchema, insertContactSchema, type Shipment } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(
@@ -185,6 +185,62 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error deleting note:", error);
       res.status(500).json({ error: "Failed to delete note" });
+    }
+  });
+
+  // ============ CONTACTS ROUTES ============
+  
+  // Get all contacts
+  app.get("/api/contacts", async (req, res) => {
+    try {
+      const contacts = await storage.getAllContacts();
+      res.json(contacts);
+    } catch (error) {
+      console.error("Error fetching contacts:", error);
+      res.status(500).json({ error: "Failed to fetch contacts" });
+    }
+  });
+  
+  // Create contact
+  app.post("/api/contacts", async (req, res) => {
+    try {
+      const data = insertContactSchema.parse(req.body);
+      const contact = await storage.createContact(data);
+      res.status(201).json(contact);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ error: "Invalid contact data", details: error.errors });
+      }
+      console.error("Error creating contact:", error);
+      res.status(500).json({ error: "Failed to create contact" });
+    }
+  });
+  
+  // Update contact
+  app.patch("/api/contacts/:id", async (req, res) => {
+    try {
+      const contact = await storage.updateContact(req.params.id, req.body);
+      if (!contact) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      res.json(contact);
+    } catch (error) {
+      console.error("Error updating contact:", error);
+      res.status(500).json({ error: "Failed to update contact" });
+    }
+  });
+  
+  // Delete contact
+  app.delete("/api/contacts/:id", async (req, res) => {
+    try {
+      const deleted = await storage.deleteContact(req.params.id);
+      if (!deleted) {
+        return res.status(404).json({ error: "Contact not found" });
+      }
+      res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      res.status(500).json({ error: "Failed to delete contact" });
     }
   });
 

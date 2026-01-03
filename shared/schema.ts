@@ -66,6 +66,14 @@ export const notes = pgTable("notes", {
   createdAt: bigint("created_at", { mode: "number" }).notNull(),
 });
 
+// Contacts table
+export const contacts = pgTable("contacts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  details: text("details").notNull(),
+  createdAt: bigint("created_at", { mode: "number" }).notNull(),
+});
+
 // Audit Log table
 export const auditLogs = pgTable("audit_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -101,6 +109,14 @@ export const insertNoteSchema = createInsertSchema(notes, {
   createdAt: true,
 });
 
+export const insertContactSchema = createInsertSchema(contacts, {
+  id: z.string().optional(),
+  createdAt: z.number().optional(),
+}).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Audit log schemas
 export const insertAuditLogSchema = createInsertSchema(auditLogs, {
   id: z.string().optional(),
@@ -115,5 +131,7 @@ export type InsertShipment = z.infer<typeof insertShipmentSchema>;
 export type Shipment = typeof shipments.$inferSelect;
 export type InsertNote = z.infer<typeof insertNoteSchema>;
 export type Note = typeof notes.$inferSelect;
+export type InsertContact = z.infer<typeof insertContactSchema>;
+export type Contact = typeof contacts.$inferSelect;
 export type AuditLog = typeof auditLogs.$inferSelect;
 export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;

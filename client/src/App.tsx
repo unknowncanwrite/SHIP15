@@ -9,8 +9,9 @@ import NotFound from "@/pages/not-found";
 import Dashboard from "@/components/dashboard/Dashboard";
 import ShipmentDetail from "@/components/shipment/ShipmentDetail";
 import NotesTable from "@/components/dashboard/NotesTable";
+import ContactsTable from "@/components/dashboard/ContactsTable";
 import { Button } from "@/components/ui/button";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Users } from "lucide-react";
 
 function Router() {
   return (
@@ -24,6 +25,7 @@ function Router() {
 
 function App() {
   const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [isContactsOpen, setIsContactsOpen] = useState(false);
 
   return (
     <ErrorBoundary>
@@ -32,18 +34,32 @@ function App() {
           <Toaster />
           <Router />
           
-          {/* Global Notes Toggle Button */}
-          <Button 
-            variant="outline" 
-            size="icon"
-            className="fixed top-20 right-6 h-12 w-12 rounded-full shadow-lg z-50 bg-primary text-primary-foreground hover:bg-primary/90"
-            onClick={() => setIsNotesOpen(true)}
-            title="Open Notes"
-          >
-            <BookOpen className="h-6 w-6" />
-          </Button>
+          <div className="fixed top-20 right-6 flex flex-col gap-2 z-50">
+            {/* Global Notes Toggle Button */}
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="h-12 w-12 rounded-full shadow-lg bg-primary text-primary-foreground hover:bg-primary/90"
+              onClick={() => setIsNotesOpen(true)}
+              title="Open Notes"
+            >
+              <BookOpen className="h-6 w-6" />
+            </Button>
+
+            {/* Global Contacts Toggle Button */}
+            <Button 
+              variant="outline" 
+              size="icon"
+              className="h-12 w-12 rounded-full shadow-lg bg-accent text-white hover:bg-accent/90"
+              onClick={() => setIsContactsOpen(true)}
+              title="Open Contacts"
+            >
+              <Users className="h-6 w-6" />
+            </Button>
+          </div>
 
           <NotesTable open={isNotesOpen} onOpenChange={setIsNotesOpen} />
+          <ContactsTable open={isContactsOpen} onOpenChange={setIsContactsOpen} />
         </QueryClientProvider>
       </ThemeProvider>
     </ErrorBoundary>

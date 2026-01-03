@@ -1,4 +1,4 @@
-import { shipments, notes, auditLogs, type Shipment, type InsertShipment, type Note, type InsertNote, type AuditLog, type InsertAuditLog } from "@shared/schema";
+import { shipments, notes, contacts, auditLogs, type Shipment, type InsertShipment, type Note, type InsertNote, type Contact, type InsertContact, type AuditLog, type InsertAuditLog } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc } from "drizzle-orm";
 
@@ -19,6 +19,12 @@ export interface IStorage {
   createNote(note: InsertNote): Promise<Note>;
   updateNote(id: string, note: Partial<InsertNote>): Promise<Note | undefined>;
   deleteNote(id: string): Promise<boolean>;
+
+  // Contact operations
+  getAllContacts(): Promise<Contact[]>;
+  createContact(contact: InsertContact): Promise<Contact>;
+  updateContact(id: string, contact: Partial<InsertContact>): Promise<Contact | undefined>;
+  deleteContact(id: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -105,6 +111,36 @@ export class DatabaseStorage implements IStorage {
 
   async deleteNote(id: string): Promise<boolean> {
     const result = await db.delete(notes).where(eq(notes.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Contact operations
+  async getAllContacts(): Promise<Contact[]> {
+    return await db.select().from(contacts).orderBy(desc(contacts.createdAt));
+  }
+
+  async createContact(contact: InsertContact): Promise<Contact> {
+    const [created] = await db
+      .insert(contacts)
+      .values({
+        ...contact,
+        createdAt: Date.now(),
+      })
+      .returning();
+    return created;
+  }
+
+  async updateContact(id: string, contact: Partial<InsertContact>): Promise<Contact | undefined> {
+    const [updated] = await db
+      .update(contacts)
+      .set(contact)
+      .where(eq(contacts.id, id))
+      .returning();
+    return updated || undefined;
+  }
+
+  async deleteContact(id: string): Promise<boolean> {
+    const result = await db.delete(contacts).where(eq(contacts.id, id)).returning();
     return result.length > 0;
   }
 }
