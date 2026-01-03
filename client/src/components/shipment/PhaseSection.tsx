@@ -95,8 +95,9 @@ export default function PhaseSection({
             setLocalRemarks(prev => ({ ...prev, [remarksKey]: newValue }));
           };
 
-          const handleRemarkBlur = () => {
-            onToggle(remarksKey, localRemarks[remarksKey] || '');
+          const handleRemarkBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+            const val = e.target.value;
+            onToggle(remarksKey, val);
           };
           
           return (

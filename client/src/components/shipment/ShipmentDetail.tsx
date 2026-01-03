@@ -229,7 +229,16 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
   const toggleChecklist = (key: string, value?: boolean | string) => {
     const newValue = value !== undefined ? value : !currentShipment.checklist[key];
     const newChecklist = { ...currentShipment.checklist, [key]: newValue };
-    updateShipment.mutate({ id: currentShipment.id, data: { checklist: newChecklist } });
+    
+    // Immediate local update for remarks to avoid race conditions with debounced state
+    if (key.endsWith('_remarks')) {
+      updateShipment.mutate({ 
+        id: currentShipment.id, 
+        data: { checklist: newChecklist } 
+      });
+    } else {
+      updateShipment.mutate({ id: currentShipment.id, data: { checklist: newChecklist } });
+    }
   };
 
   const toggleCustomTask = (id: string, taskId: string) => {
