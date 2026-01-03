@@ -226,20 +226,17 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
   };
 
   // Action helpers using mutation API
-  const toggleChecklist = (key: string, value?: boolean | string) => {
-    const newValue = value !== undefined ? value : !currentShipment.checklist[key];
-    const newChecklist = { ...currentShipment.checklist, [key]: newValue };
+  const toggleChecklist = useCallback((key: string, value?: boolean | string) => {
+    // For remarks, we need the latest checklist state to avoid overwriting other remarks
+    const currentChecklist = currentShipment.checklist || {};
+    const newValue = value !== undefined ? value : !currentChecklist[key];
+    const newChecklist = { ...currentChecklist, [key]: newValue };
     
-    // Immediate local update for remarks to avoid race conditions with debounced state
-    if (key.endsWith('_remarks')) {
-      updateShipment.mutate({ 
-        id: currentShipment.id, 
-        data: { checklist: newChecklist } 
-      });
-    } else {
-      updateShipment.mutate({ id: currentShipment.id, data: { checklist: newChecklist } });
-    }
-  };
+    updateShipment.mutate({ 
+      id: currentShipment.id, 
+      data: { checklist: newChecklist } 
+    });
+  }, [currentShipment.id, currentShipment.checklist, updateShipment]);
 
   const toggleCustomTask = (id: string, taskId: string) => {
     const newCustomTasks = currentShipment.customTasks.map(t => 

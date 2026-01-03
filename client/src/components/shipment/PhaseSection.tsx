@@ -96,8 +96,11 @@ export default function PhaseSection({
           };
 
           const handleRemarkBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-            const val = e.target.value;
-            onToggle(remarksKey, val);
+            const val = e.target.value.trim();
+            // Only update if it actually changed to avoid unnecessary re-renders/saves
+            if (val !== (checklistState[remarksKey] || '')) {
+              onToggle(remarksKey, val);
+            }
           };
           
           return (
