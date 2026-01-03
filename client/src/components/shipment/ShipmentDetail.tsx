@@ -288,15 +288,16 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
   };
 
   const addRemarksItem = (id: string, itemText: string) => {
+    if (!itemText.trim()) return;
     const newItem = {
       id: Math.random().toString(36).substr(2, 9),
-      item: itemText,
+      item: itemText.trim(),
       completed: false,
     };
     const currentRemarks = currentShipment.checklist?.remarks_list || [];
     updateShipment.mutate({ 
       id, 
-      data: { checklist: { ...currentChecklist, remarks_list: [...currentRemarks, newItem] } } 
+      data: { checklist: { ...currentShipment.checklist, remarks_list: [...currentRemarks, newItem] } } 
     });
   };
 
