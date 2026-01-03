@@ -279,6 +279,32 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
     updateShipment.mutate({ id, data: { shipmentChecklist: newShipmentChecklist } });
   };
 
+  const [remarksInput, setRemarksInput] = useState('');
+  const toggleRemarksItem = (id: string, itemId: string) => {
+    const newRemarks = (currentShipment.checklist?.remarks_list || []).map((item: any) => 
+      item.id === itemId ? { ...item, completed: !item.completed } : item
+    );
+    updateShipment.mutate({ id, data: { checklist: { ...currentShipment.checklist, remarks_list: newRemarks } } });
+  };
+
+  const addRemarksItem = (id: string, itemText: string) => {
+    const newItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      item: itemText,
+      completed: false,
+    };
+    const currentRemarks = currentShipment.checklist?.remarks_list || [];
+    updateShipment.mutate({ 
+      id, 
+      data: { checklist: { ...currentChecklist, remarks_list: [...currentRemarks, newItem] } } 
+    });
+  };
+
+  const deleteRemarksItem = (id: string, itemId: string) => {
+    const newRemarks = (currentShipment.checklist?.remarks_list || []).filter((item: any) => item.id !== itemId);
+    updateShipment.mutate({ id, data: { checklist: { ...currentShipment.checklist, remarks_list: newRemarks } } });
+  };
+
   // Countdown Logic
   const countdown = useMemo(() => {
     if (!currentShipment.details.inspectionDate) {
@@ -438,6 +464,65 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
                              Target: {format(new Date(currentShipment.details.inspectionDate), 'MMM d, yyyy')}
                          </span>
                     )}
+                </div>
+
+                {/* Remarks Widget */}
+                <div className="bg-card p-4 rounded-lg border shadow-sm">
+                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3 flex items-center justify-between">
+                    Remarks
+                    <Badge variant="outline" className="text-[10px] h-4">{ (currentShipment.checklist?.remarks_list || []).length }</Badge>
+                  </h3>
+                  <div className="space-y-2 mb-3 max-h-40 overflow-y-auto">
+                    {(currentShipment.checklist?.remarks_list || []).map((item: any) => (
+                      <div key={item.id} className="flex items-start gap-2 group">
+                        <Checkbox 
+                          id={`remark-${item.id}`} 
+                          checked={item.completed} 
+                          onCheckedChange={() => toggleRemarksItem(currentShipment.id, item.id)}
+                          className="mt-0.5 h-3.5 w-3.5"
+                        />
+                        <Label 
+                          htmlFor={`remark-${item.id}`} 
+                          className={`text-xs flex-1 break-words cursor-pointer ${item.completed ? 'text-muted-foreground line-through' : ''}`}
+                        >
+                          {item.item}
+                        </Label>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-4 w-4 opacity-0 group-hover:opacity-100 text-destructive"
+                          onClick={() => deleteRemarksItem(currentShipment.id, item.id)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Input 
+                      placeholder="New remark..." 
+                      value={remarksInput}
+                      onChange={(e) => setRemarksInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          addRemarksItem(currentShipment.id, remarksInput);
+                          setRemarksInput('');
+                        }
+                      }}
+                      className="h-7 text-xs"
+                    />
+                    <Button 
+                      size="icon" 
+                      variant="outline" 
+                      className="h-7 w-7"
+                      onClick={() => {
+                        addRemarksItem(currentShipment.id, remarksInput);
+                        setRemarksInput('');
+                      }}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Contacts Widget */}

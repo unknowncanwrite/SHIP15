@@ -123,24 +123,6 @@ export default function PhaseSection({
                     >
                       {task.label}
                     </Label>
-                    
-                    {task.hasRemarks && (
-                      <div className="flex-1 max-w-[200px] ml-4">
-                        <Input
-                          placeholder="Add remark..."
-                          value={remarkValue}
-                          onChange={handleRemarkChange}
-                          onBlur={handleRemarkBlur}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
-                              handleRemarkBlur();
-                            }
-                            e.stopPropagation();
-                          }}
-                          className="h-7 text-xs bg-background/50 focus:bg-background"
-                        />
-                      </div>
-                    )}
                   </div>
 
                   {isHighlighted && (
