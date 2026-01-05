@@ -187,6 +187,9 @@ export default function Dashboard() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="date">Date Created</SelectItem>
+                  <SelectItem value="invoice">Invoice ID</SelectItem>
+                  <SelectItem value="customer">Customer Name</SelectItem>
+                  <SelectItem value="container">Container Number</SelectItem>
                   <SelectItem value="progress">Progress %</SelectItem>
                   <SelectItem value="status">Status (Active First)</SelectItem>
                 </SelectContent>
