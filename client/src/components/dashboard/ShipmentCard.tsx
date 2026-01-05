@@ -85,10 +85,7 @@ export default function ShipmentCard({ data }: ShipmentCardProps) {
               <Anchor className="h-3 w-3" /> Forwarder
             </span>
             <span className="text-sm font-medium">
-              {data.forwarder === 'manual' 
-                ? (data.manualForwarderName || 'Manual') 
-                : (data.forwarder === 'xpo' ? 'XPO Logistics' : 'HMI Logistics')
-              }
+              {data.manualForwarderName || (data.forwarder === 'xpo' ? 'XPO Logistics' : data.forwarder === 'hmi' ? 'HMI Logistics' : 'Pending')}
             </span>
           </div>
         </div>
