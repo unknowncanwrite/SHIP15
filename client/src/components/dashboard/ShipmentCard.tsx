@@ -2,6 +2,7 @@ import { Link } from 'wouter';
 import { ShipmentData } from '@/types/shipment';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { CalendarDays, Truck, ExternalLink, ArrowRight, Anchor } from 'lucide-react';
 import { format } from 'date-fns';
@@ -31,9 +32,9 @@ export default function ShipmentCard({ data }: ShipmentCardProps) {
             </Badge>
           </CardTitle>
           <Link href={`/shipment/${data.id}`}>
-            <span className="text-xs font-semibold text-accent flex items-center gap-1 cursor-pointer group-hover:underline">
-              Open <ArrowRight className="h-3 w-3" />
-            </span>
+            <Button size="sm" className="bg-accent hover:bg-accent/90 text-white shadow-sm flex items-center gap-2 group/btn h-9 px-4">
+              Open <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
+            </Button>
           </Link>
         </div>
       </CardHeader>
