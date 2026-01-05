@@ -1,3 +1,5 @@
+import { Badge } from '@/components/ui/badge';
+import { Link } from 'wouter';
 import { useState } from 'react';
 import { calculateProgress } from '@/lib/shipment-utils';
 import { initialShipmentData } from '@/types/shipment';
