@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getFileFromDrive, deleteFileFromDrive } from '../lib/google-drive';
+import { getFileFromDrive, deleteFileFromDrive } from '../lib/google-drive.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
