@@ -6,19 +6,21 @@ A shipment management application that tracks shipments, notes, and contacts wit
 ## Tech Stack
 - **Frontend**: React + Vite + TailwindCSS
 - **Backend**: Supabase PostgreSQL (via Drizzle ORM)
-- **File Storage**: Google Drive (via Replit integration)
-- **Deployment**: Vercel (serverless functions)
+- **File Storage**: Supabase Storage
+- **Deployment**: Vercel (serverless functions) or Render
 
-## Vercel Deployment
+## Vercel/Render Deployment
 
 ### Required Environment Variables
-Set these in Vercel project settings:
+Set these in Vercel/Render project settings:
 - `SUPABASE_DATABASE_URL` - Supabase PostgreSQL connection string
+- `SUPABASE_URL` - Supabase project URL (e.g., https://xxx.supabase.co)
+- `SUPABASE_ANON_KEY` - Supabase anonymous/public API key
 
 ### Deployment Steps
 1. Push code to GitHub repository
-2. Connect Vercel to the GitHub repository
-3. Configure environment variables in Vercel dashboard
+2. Connect Vercel/Render to the GitHub repository
+3. Configure environment variables in dashboard
 4. Deploy
 
 ### Project Structure for Vercel
@@ -26,11 +28,12 @@ Set these in Vercel project settings:
 - `/client` - Frontend React application
 - `vercel.json` - Vercel configuration
 
-## Google Drive Integration
-Documents uploaded to shipments are stored in Google Drive:
-- Uses Replit's Google Drive connector for authentication
-- Files are uploaded with public read access for easy sharing
-- Document links are stored in PostgreSQL, not the file content
+## Supabase Storage Setup
+Documents uploaded to shipments are stored in Supabase Storage:
+1. Go to Supabase dashboard → Storage
+2. Create a bucket named `shipment-documents`
+3. Set it as a **Public bucket** for easy file access
+4. Files are uploaded with unique timestamps to prevent conflicts
 
 ## GitHub Sync
 - Repository: https://github.com/unknowncanwrite/ship
@@ -44,8 +47,8 @@ Documents uploaded to shipments are stored in Google Drive:
 - `PATCH/DELETE /api/notes/[id]` - Note operations
 - `GET/POST /api/contacts` - List/create contacts
 - `PATCH/DELETE /api/contacts/[id]` - Contact operations
-- `POST /api/files/upload` - Upload file to Google Drive
-- `GET/DELETE /api/files/[id]` - Get/delete file from Google Drive
+- `POST /api/files/upload` - Upload file to Supabase Storage
+- `GET/DELETE /api/files/[id]` - Get/delete file from Supabase Storage
 
 ## Database Schema
 Tables managed via Drizzle ORM:
