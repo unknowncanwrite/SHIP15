@@ -33,7 +33,11 @@ Documents uploaded to shipments are stored in Supabase Storage:
 1. Go to Supabase dashboard → Storage
 2. Create a bucket named `shipment-documents`
 3. Set it as a **Public bucket** for easy file access
-4. Files are uploaded with unique timestamps to prevent conflicts
+4. Get the **service_role** key from Project Settings → API → Service role key
+5. Add `SUPABASE_SERVICE_ROLE_KEY` environment variable to your deployment (Render/Vercel)
+6. Files are uploaded with unique timestamps to prevent conflicts
+
+**Security Note:** The service role key bypasses RLS and should only be used server-side (never in client code).
 
 ## GitHub Sync
 - Repository: https://github.com/unknowncanwrite/ship
