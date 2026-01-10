@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CalendarDays, Truck, ExternalLink, ArrowRight, Anchor } from 'lucide-react';
+import { CalendarDays, Truck, ExternalLink, ArrowRight, Anchor, Ship } from 'lucide-react';
 import { format } from 'date-fns';
 import { calculateProgress } from '@/lib/shipment-utils';
 
@@ -49,9 +49,9 @@ export default function ShipmentCard({ data }: ShipmentCardProps) {
             <div className="flex items-center gap-2">
               <span className="font-mono text-foreground">{data.details.container || '—'}</span>
               {data.details.container && (
-                <a 
-                  href={`https://www.track-trace.com/container/list/${data.details.container}`} 
-                  target="_blank" 
+                <a
+                  href={`https://www.track-trace.com/container/list/${data.details.container}`}
+                  target="_blank"
                   rel="noreferrer"
                   className="text-accent hover:text-accent/80 transition-colors"
                   title="Track Container"
@@ -86,6 +86,14 @@ export default function ShipmentCard({ data }: ShipmentCardProps) {
             </span>
             <span className="text-sm font-medium">
               {data.manualForwarderName || (data.forwarder === 'xpo' ? 'XPO Logistics' : data.forwarder === 'hmi' ? 'HMI Logistics' : '—')}
+            </span>
+          </div>
+          <div className="col-span-2 flex flex-col gap-1 mt-1">
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <Ship className="h-3 w-3" /> Shipping Line
+            </span>
+            <span className="text-sm font-medium">
+              {data.details.shippingLine || '—'}
             </span>
           </div>
         </div>
