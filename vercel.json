@@ -1,7 +1,7 @@
 {
-  "buildCommand": "npx vite build --outDir dist/public",
+  "buildCommand": "npm run build:client",
   "outputDirectory": "dist/public",
-  "framework": "vite",
+  "framework": null,
   "rewrites": [
     {
       "source": "/((?!api/).*)",
