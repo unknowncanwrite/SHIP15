@@ -152,7 +152,7 @@ export const printShoesUndertaking = (data: ShipmentData) => {
         <div class="detail-line">UCR# : ${data.details.ucr || '_________________'}</div>
         <div class="detail-line">PFI# : ${data.details.proforma || '_________________'}</div>
         <div class="detail-line">CNTR# : ${data.details.container || '_________________'}</div>
-        <div class="detail-line">IMPORTER: ${data.details.customer || '_________________'}</div>
+        <div class="detail-line">IMPORTER: ${data.details.consignee || '_________________'}</div>
         <div class="detail-line">NO. OF PACKAGES: ${data.commercial?.qty || '_________________'}</div>
       </div>
       
