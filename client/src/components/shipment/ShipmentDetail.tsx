@@ -20,6 +20,8 @@ import { calculateProgress, calculatePhaseProgress, getIncompleteTasks } from '@
 import { PHASE_1_TASKS, PHASE_2_TASKS, PHASE_3_TASKS, PHASE_5_TASKS, getForwarderTasks, getFumigationTasks, TaskDefinition } from '@/lib/shipment-definitions';
 import { ShipmentData } from '@/types/shipment';
 import type { Shipment } from '@shared/schema';
+import { uploadToGoogleDrive, downloadFromGoogleDrive, deleteFromGoogleDrive, getGoogleAccessToken, isGoogleDriveFile } from '@/lib/googleDrive';
+
 
 // Debounce hook for text input - fixed to prevent hook dependency issues
 const useDebouncedSave = (value: string, delay: number, onSave: (val: string) => void) => {
@@ -168,49 +170,29 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
     setUploadError(null);
 
     try {
-      const reader = new FileReader();
+      setUploadProgress(20);
 
-      reader.onprogress = (event) => {
-        if (event.lengthComputable) {
-          const percentComplete = Math.round((event.loaded / event.total) * 50);
-          setUploadProgress(percentComplete);
-        }
-      };
-
-      const base64Content = await new Promise<string>((resolve, reject) => {
-        reader.onload = (event) => {
-          const result = event.target?.result as string;
-          const base64 = result.replace(/^data:application\/pdf;base64,/, '');
-          resolve(base64);
-        };
-        reader.onerror = () => reject(new Error('Error reading file'));
-        reader.readAsDataURL(file);
-      });
-
-      setUploadProgress(50);
-
-      const docName = newDocName.trim() || file.name.replace('.pdf', '');
-
-      const response = await fetch('/api/files/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          fileName: `${docName}.pdf`,
-          mimeType: 'application/pdf',
-          fileContent: base64Content,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to upload to Google Drive');
+      // Get Google access token
+      const accessToken = await getGoogleAccessToken();
+      if (!accessToken) {
+        throw new Error('Please sign in with Google to upload files');
       }
 
-      const driveFile = await response.json();
+      setUploadProgress(40);
+
+      const docName = newDocName.trim() || file.name.replace('.pdf', '');
+      const fileToUpload = new File([file], `${docName}.pdf`, { type: 'application/pdf' });
+
+      // Upload directly to Google Drive
+      const result = await uploadToGoogleDrive(fileToUpload, accessToken);
+
+      setUploadProgress(80);
 
       const newDocument = {
-        id: driveFile.id,
+        id: result.fileId,
         name: docName,
-        file: driveFile.webViewLink,
+        file: result.fileId, // Store Drive file ID
+        storageType: 'google_drive',
         createdAt: Date.now(),
       };
 
@@ -229,12 +211,12 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
           description: `${docName} has been uploaded to Google Drive.`,
         });
       }, 300);
-    } catch (error) {
-      setUploadError('Error uploading file');
+    } catch (error: any) {
+      setUploadError(error.message || 'Error uploading file');
       setUploadProgress(null);
       toast({
         title: "Upload Failed",
-        description: "An error occurred while uploading the file.",
+        description: error.message || "An error occurred while uploading the file.",
         variant: "destructive"
       });
     }
@@ -919,23 +901,63 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
                   (currentShipment.documents || []).map((doc) => (
                     <div key={doc.id} className="flex items-center justify-between p-2 bg-muted/20 rounded-md border text-xs group hover:bg-muted/30 transition-colors">
                       <button
-                        onClick={() => {
-                          if (doc.file.startsWith('http')) {
-                            window.open(doc.file, '_blank');
+                        onClick={async () => {
+                          try {
+                            // Check if it's a Google Drive file
+                            if (isGoogleDriveFile(doc.file)) {
+                              // Get access token
+                              const accessToken = await getGoogleAccessToken();
+                              if (!accessToken) {
+                                throw new Error('Please sign in with Google');
+                              }
+
+                              toast({
+                                title: "Downloading...",
+                                description: `Fetching ${doc.name} from Google Drive.`,
+                              });
+
+                              // Download from Google Drive
+                              const blob = await downloadFromGoogleDrive(doc.file, accessToken);
+
+                              // Create download link
+                              const url = URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = url;
+                              link.download = doc.name.endsWith('.pdf') ? doc.name : `${doc.name}.pdf`;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              URL.revokeObjectURL(url);
+
+                              toast({
+                                title: "Download Complete",
+                                description: `${doc.name} has been downloaded.`,
+                              });
+                            } else if (doc.file.startsWith('http')) {
+                              // Legacy: Open Supabase URL
+                              window.open(doc.file, '_blank');
+                              toast({
+                                title: "Opening Document",
+                                description: `${doc.name} is opening.`,
+                              });
+                            } else {
+                              // Legacy: Base64 download
+                              const link = document.createElement('a');
+                              link.href = `data:application/pdf;base64,${doc.file}`;
+                              link.download = doc.name.endsWith('.pdf') ? doc.name : `${doc.name}.pdf`;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              toast({
+                                title: "Download Started",
+                                description: `${doc.name} is being downloaded.`,
+                              });
+                            }
+                          } catch (error: any) {
                             toast({
-                              title: "Opening Document",
-                              description: `${doc.name} is opening in Google Drive.`,
-                            });
-                          } else {
-                            const link = document.createElement('a');
-                            link.href = `data:application/pdf;base64,${doc.file}`;
-                            link.download = doc.name.endsWith('.pdf') ? doc.name : `${doc.name}.pdf`;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                            toast({
-                              title: "Download Started",
-                              description: `${doc.name} is being downloaded.`,
+                              title: "Download Failed",
+                              description: error.message || "Failed to download file.",
+                              variant: "destructive"
                             });
                           }
                         }}
@@ -951,12 +973,29 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6 text-destructive flex-shrink-0 md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                        onClick={() => {
-                          deleteDocument(currentShipment.id, doc.id);
-                          toast({
-                            title: "Document Deleted",
-                            description: `${doc.name} has been removed.`,
-                          });
+                        onClick={async () => {
+                          try {
+                            // If it's a Google Drive file, delete from Drive
+                            if (isGoogleDriveFile(doc.file)) {
+                              const accessToken = await getGoogleAccessToken();
+                              if (accessToken) {
+                                await deleteFromGoogleDrive(doc.file, accessToken);
+                              }
+                            }
+
+                            // Remove from database
+                            deleteDocument(currentShipment.id, doc.id);
+                            toast({
+                              title: "Document Deleted",
+                              description: `${doc.name} has been removed.`,
+                            });
+                          } catch (error: any) {
+                            toast({
+                              title: "Delete Failed",
+                              description: error.message || "Failed to delete file.",
+                              variant: "destructive"
+                            });
+                          }
                         }}
                       >
                         <X className="h-3 w-3" />
