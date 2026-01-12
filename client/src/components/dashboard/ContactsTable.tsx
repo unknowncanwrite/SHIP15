@@ -57,7 +57,7 @@ export default function ContactsTable({ open, onOpenChange }: ContactsTableProps
   const handleBlur = (id: string) => {
     const edited = editValues[id];
     const original = contacts.find(c => c.id === id);
-    
+
     if (edited && original && (edited.name !== original.name || edited.details !== original.details)) {
       updateContact.mutate({
         id,
@@ -77,7 +77,7 @@ export default function ContactsTable({ open, onOpenChange }: ContactsTableProps
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[40vw] max-w-2xl flex flex-col p-0">
+      <SheetContent side="right" className="w-[60vh] md:w-[50vw] max-w-2xl flex flex-col p-0">
         <SheetHeader className="border-b px-6 py-4 sticky top-0 bg-background">
           <div className="flex items-center justify-between w-full">
             <SheetTitle>Contacts</SheetTitle>
