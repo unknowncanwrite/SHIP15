@@ -1,6 +1,6 @@
 /**
- * Google Drive API Service
- * Handles all interactions with Google Drive for document storage
+ * Google Drive API Service (Client-Side)
+ * Handles file uploads through server API using service account
  */
 
 interface GoogleDriveFile {
@@ -14,51 +14,44 @@ interface GoogleDriveFile {
 interface UploadResponse {
     fileId: string;
     fileName: string;
-    fileSize: string;
+    fileSize?: string;
 }
 
-const GOOGLE_DRIVE_API_BASE = 'https://www.googleapis.com/drive/v3';
-const GOOGLE_DRIVE_UPLOAD_BASE = 'https://www.googleapis.com/upload/drive/v3';
-
 /**
- * Upload a file to Google Drive
+ * Upload a file to Google Drive via server API
  */
 export async function uploadToGoogleDrive(
     file: File,
-    accessToken: string
+    fileName?: string
 ): Promise<UploadResponse> {
     try {
-        // Create metadata
-        const metadata = {
-            name: file.name,
-            mimeType: file.type,
-            // Store in a dedicated folder for the app (optional)
-            // parents: ['folderId'] // We can create an app folder later if needed
-        };
+        // Convert file to base64
+        const fileContent = await new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const base64 = (reader.result as string).split(',')[1];
+                resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
 
-        // Create form data for multipart upload
-        const form = new FormData();
-        form.append(
-            'metadata',
-            new Blob([JSON.stringify(metadata)], { type: 'application/json' })
-        );
-        form.append('file', file);
-
-        // Upload file
-        const response = await fetch(
-            `${GOOGLE_DRIVE_UPLOAD_BASE}/files?uploadType=multipart&fields=id,name,size`,
-            {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-                body: form,
-            }
-        );
+        // Upload via server API
+        const response = await fetch('/api/files/upload', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                fileName: fileName || file.name,
+                mimeType: file.type,
+                fileContent,
+            }),
+        });
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.error?.message || 'Failed to upload file to Google Drive');
+            throw new Error(error.error || 'Failed to upload file to Google Drive');
         }
 
         const result = await response.json();
@@ -76,121 +69,33 @@ export async function uploadToGoogleDrive(
 
 /**
  * Download a file from Google Drive
+ * Note: This now returns the webViewLink instead of blob
  */
 export async function downloadFromGoogleDrive(
-    fileId: string,
-    accessToken: string
-): Promise<Blob> {
-    try {
-        const response = await fetch(
-            `${GOOGLE_DRIVE_API_BASE}/files/${fileId}?alt=media`,
-            {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            }
-        );
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error?.message || 'Failed to download file from Google Drive');
-        }
-
-        return await response.blob();
-    } catch (error) {
-        console.error('Error downloading from Google Drive:', error);
-        throw error;
-    }
+    fileId: string
+): Promise<string> {
+    // Return the Google Drive view link
+    return `https://drive.google.com/file/d/${fileId}/view`;
 }
 
 /**
- * Get file metadata from Google Drive
- */
-export async function getFileMetadata(
-    fileId: string,
-    accessToken: string
-): Promise<GoogleDriveFile> {
-    try {
-        const response = await fetch(
-            `${GOOGLE_DRIVE_API_BASE}/files/${fileId}?fields=id,name,mimeType,createdTime,size`,
-            {
-                method: 'GET',
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            }
-        );
-
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error?.message || 'Failed to get file metadata');
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error('Error getting file metadata:', error);
-        throw error;
-    }
-}
-
-/**
- * Delete a file from Google Drive (moves to trash)
+ * Delete a file from Google Drive via server API
  */
 export async function deleteFromGoogleDrive(
-    fileId: string,
-    accessToken: string
+    fileId: string
 ): Promise<void> {
     try {
-        const response = await fetch(
-            `${GOOGLE_DRIVE_API_BASE}/files/${fileId}`,
-            {
-                method: 'DELETE',
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            }
-        );
+        const response = await fetch(`/api/files/${fileId}`, {
+            method: 'DELETE',
+        });
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.error?.message || 'Failed to delete file from Google Drive');
+            throw new Error(error.error || 'Failed to delete file from Google Drive');
         }
     } catch (error) {
         console.error('Error deleting from Google Drive:', error);
         throw error;
-    }
-}
-
-/**
- * Get Google access token from Supabase session
- */
-export async function getGoogleAccessToken(): Promise<string | null> {
-    try {
-        const { createClient } = await import('@supabase/supabase-js');
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!session) {
-            throw new Error('Please sign in to upload files');
-        }
-
-        if (!session.provider_token) {
-            console.error('Google access token not found. Provider:', session.user?.app_metadata?.provider);
-            throw new Error(
-                'Please sign in with Google to upload files. ' +
-                'Note: Email/password authentication does not support file uploads.'
-            );
-        }
-
-        return session.provider_token;
-    } catch (error) {
-        console.error('Error getting Google access token:', error);
-        return null;
     }
 }
 

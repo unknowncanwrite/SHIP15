@@ -1,70 +1,30 @@
-import { createClient } from '@supabase/supabase-js';
-
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY) environment variables are required');
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-const BUCKET_NAME = 'shipment-documents';
+import { uploadFileToDrive, deleteFileFromDrive, getGoogleDriveClient } from './google-drive';
 
 export async function uploadFile(
   fileName: string,
   mimeType: string,
   fileContent: string
 ): Promise<{ id: string; name: string; webViewLink: string }> {
-  const buffer = Buffer.from(fileContent, 'base64');
-  const uniqueFileName = `${Date.now()}-${fileName}`;
-  
-  const { data, error } = await supabase.storage
-    .from(BUCKET_NAME)
-    .upload(uniqueFileName, buffer, {
-      contentType: mimeType,
-      upsert: false,
-    });
-
-  if (error) {
-    throw new Error(`Upload failed: ${error.message}`);
-  }
-
-  const { data: urlData } = supabase.storage
-    .from(BUCKET_NAME)
-    .getPublicUrl(uniqueFileName);
-
-  return {
-    id: data.path,
-    name: fileName,
-    webViewLink: urlData.publicUrl,
-  };
+  return uploadFileToDrive(fileName, mimeType, fileContent);
 }
 
 export async function deleteFile(fileId: string): Promise<void> {
-  const { error } = await supabase.storage
-    .from(BUCKET_NAME)
-    .remove([fileId]);
-
-  if (error) {
-    throw new Error(`Delete failed: ${error.message}`);
-  }
+  return deleteFileFromDrive(fileId);
 }
 
 export async function getFile(fileId: string): Promise<{ name: string; mimeType: string; data: Buffer }> {
-  const { data, error } = await supabase.storage
-    .from(BUCKET_NAME)
-    .download(fileId);
+  const drive = await getGoogleDriveClient();
 
-  if (error) {
-    throw new Error(`Download failed: ${error.message}`);
-  }
+  const response = await drive.files.get(
+    { fileId, alt: 'media' },
+    { responseType: 'arraybuffer' }
+  );
 
-  const arrayBuffer = await data.arrayBuffer();
-  
+  const metadata = await drive.files.get({ fileId, fields: 'name,mimeType' });
+
   return {
-    name: fileId.split('/').pop() || fileId,
-    mimeType: data.type,
-    data: Buffer.from(arrayBuffer),
+    name: metadata.data.name || 'unknown',
+    mimeType: metadata.data.mimeType || 'application/octet-stream',
+    data: Buffer.from(response.data as ArrayBuffer),
   };
 }

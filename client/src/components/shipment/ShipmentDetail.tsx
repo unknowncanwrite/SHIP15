@@ -20,7 +20,7 @@ import { calculateProgress, calculatePhaseProgress, getIncompleteTasks } from '@
 import { PHASE_1_TASKS, PHASE_2_TASKS, PHASE_3_TASKS, PHASE_5_TASKS, getForwarderTasks, getFumigationTasks, TaskDefinition } from '@/lib/shipment-definitions';
 import { ShipmentData } from '@/types/shipment';
 import type { Shipment } from '@shared/schema';
-import { uploadToGoogleDrive, downloadFromGoogleDrive, deleteFromGoogleDrive, getGoogleAccessToken, isGoogleDriveFile } from '@/lib/googleDrive';
+import { uploadToGoogleDrive, downloadFromGoogleDrive, deleteFromGoogleDrive, isGoogleDriveFile } from '@/lib/googleDrive';
 
 
 // Debounce hook for text input - fixed to prevent hook dependency issues
@@ -172,19 +172,11 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
     try {
       setUploadProgress(20);
 
-      // Get Google access token
-      const accessToken = await getGoogleAccessToken();
-      if (!accessToken) {
-        throw new Error('Please sign in with Google to upload files');
-      }
-
-      setUploadProgress(40);
-
       const docName = newDocName.trim() || file.name.replace('.pdf', '');
       const fileToUpload = new File([file], `${docName}.pdf`, { type: 'application/pdf' });
 
-      // Upload directly to Google Drive
-      const result = await uploadToGoogleDrive(fileToUpload, accessToken);
+      // Upload directly to Google Drive via server API
+      const result = await uploadToGoogleDrive(fileToUpload, docName);
 
       setUploadProgress(80);
 
@@ -905,34 +897,9 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
                           try {
                             // Check if it's a Google Drive file
                             if (isGoogleDriveFile(doc.file)) {
-                              // Get access token
-                              const accessToken = await getGoogleAccessToken();
-                              if (!accessToken) {
-                                throw new Error('Please sign in with Google');
-                              }
-
-                              toast({
-                                title: "Downloading...",
-                                description: `Fetching ${doc.name} from Google Drive.`,
-                              });
-
-                              // Download from Google Drive
-                              const blob = await downloadFromGoogleDrive(doc.file, accessToken);
-
-                              // Create download link
-                              const url = URL.createObjectURL(blob);
-                              const link = document.createElement('a');
-                              link.href = url;
-                              link.download = doc.name.endsWith('.pdf') ? doc.name : `${doc.name}.pdf`;
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              URL.revokeObjectURL(url);
-
-                              toast({
-                                title: "Download Complete",
-                                description: `${doc.name} has been downloaded.`,
-                              });
+                              // Open Google Drive file in new tab
+                              const driveLink = await downloadFromGoogleDrive(doc.file);
+                              window.open(driveLink, '_blank');
                             } else if (doc.file.startsWith('http')) {
                               // Legacy: Open Supabase URL
                               window.open(doc.file, '_blank');
@@ -977,10 +944,7 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
                           try {
                             // If it's a Google Drive file, delete from Drive
                             if (isGoogleDriveFile(doc.file)) {
-                              const accessToken = await getGoogleAccessToken();
-                              if (accessToken) {
-                                await deleteFromGoogleDrive(doc.file, accessToken);
-                              }
+                              await deleteFromGoogleDrive(doc.file);
                             }
 
                             // Remove from database
