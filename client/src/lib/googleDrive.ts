@@ -167,8 +167,6 @@ export async function deleteFromGoogleDrive(
  */
 export async function getGoogleAccessToken(): Promise<string | null> {
     try {
-        // This will be implemented with Supabase auth
-        // For now, return null - will be updated after Supabase config
         const { createClient } = await import('@supabase/supabase-js');
         const supabase = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -177,8 +175,16 @@ export async function getGoogleAccessToken(): Promise<string | null> {
 
         const { data: { session } } = await supabase.auth.getSession();
 
-        if (!session?.provider_token) {
-            throw new Error('No Google access token found. Please sign in with Google.');
+        if (!session) {
+            throw new Error('Please sign in to upload files');
+        }
+
+        if (!session.provider_token) {
+            console.error('Google access token not found. Provider:', session.user?.app_metadata?.provider);
+            throw new Error(
+                'Please sign in with Google to upload files. ' +
+                'Note: Email/password authentication does not support file uploads.'
+            );
         }
 
         return session.provider_token;
