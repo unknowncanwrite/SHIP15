@@ -1,5 +1,5 @@
 import { ShipmentData } from "@/types/shipment";
-import { PHASE_1_TASKS, PHASE_2_TASKS, PHASE_3_TASKS, getForwarderTasks, getFumigationTasks, TaskDefinition } from "./shipment-definitions";
+import { PHASE_1_TASKS, PHASE_2_TASKS, PHASE_3_TASKS, PHASE_5_TASKS, getForwarderTasks, getFumigationTasks, TaskDefinition } from "./shipment-definitions";
 
 export function calculateProgress(data: ShipmentData): number {
   let allTasks: string[] = [];
@@ -44,23 +44,26 @@ export function calculatePhaseProgress(data: ShipmentData, tasks: TaskDefinition
 export function getIncompleteTasks(data: ShipmentData): TaskDefinition[] {
   let allTasks: TaskDefinition[] = [];
 
+  // Only add inspection-related phases if shipmentType is 'with-inspection'
   if (data.shipmentType === 'with-inspection') {
     allTasks = [
       ...allTasks,
       ...PHASE_1_TASKS,
     ];
-  }
 
-  // Use fumigation tasks instead of PHASE_2_TASKS
-  const fumigationTasks = getFumigationTasks(data);
-  allTasks = [...allTasks, ...fumigationTasks];
+    // Fumigation tasks are also only for with-inspection
+    const fumigationTasks = getFumigationTasks(data);
+    allTasks = [...allTasks, ...fumigationTasks];
 
-  if (data.shipmentType === 'with-inspection') {
     allTasks = [...allTasks, ...PHASE_3_TASKS];
   }
 
+  // Phase 4 (Forwarder) is always shown
   const forwarderTasks = getForwarderTasks(data);
   allTasks = [...allTasks, ...forwarderTasks];
+
+  // Phase 5 (Final Delivery) is always shown
+  allTasks = [...allTasks, ...PHASE_5_TASKS];
 
   // Find skipped tasks: incomplete tasks that have at least one completed task after them
   const missedTasks: TaskDefinition[] = [];
@@ -83,19 +86,23 @@ export function getIncompleteTasks(data: ShipmentData): TaskDefinition[] {
 export function getNextTask(data: ShipmentData): TaskDefinition | null {
   let allTasks: TaskDefinition[] = [];
 
+  // Only add inspection-related phases if shipmentType is 'with-inspection'
   if (data.shipmentType === 'with-inspection') {
     allTasks = [...allTasks, ...PHASE_1_TASKS];
-  }
 
-  const fumigationTasks = getFumigationTasks(data);
-  allTasks = [...allTasks, ...fumigationTasks];
+    // Fumigation tasks are also only for with-inspection
+    const fumigationTasks = getFumigationTasks(data);
+    allTasks = [...allTasks, ...fumigationTasks];
 
-  if (data.shipmentType === 'with-inspection') {
     allTasks = [...allTasks, ...PHASE_3_TASKS];
   }
 
+  // Phase 4 (Forwarder) is always shown
   const forwarderTasks = getForwarderTasks(data);
   allTasks = [...allTasks, ...forwarderTasks];
+
+  // Phase 5 (Final Delivery) is always shown
+  allTasks = [...allTasks, ...PHASE_5_TASKS];
 
   // Find the first incomplete task
   for (const task of allTasks) {
