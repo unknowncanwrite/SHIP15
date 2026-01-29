@@ -580,6 +580,10 @@ function ShipmentDetailContent({ currentShipment: inputShipment }: { currentShip
                 <Input id="shippingLine" value={details.shippingLine || ''} onChange={(e) => handleDetailChange('shippingLine', e.target.value)} />
               </div>
               <div className="space-y-2">
+                <Label htmlFor="clearingAgent" className="text-xs text-muted-foreground uppercase font-bold">Clearing Agent</Label>
+                <Input id="clearingAgent" value={details.clearingAgent || ''} onChange={(e) => handleDetailChange('clearingAgent', e.target.value)} />
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="brand" className="text-xs text-muted-foreground uppercase font-bold">Brand</Label>
                 <Input id="brand" value={details.brand} onChange={(e) => handleDetailChange('brand', e.target.value)} />
               </div>

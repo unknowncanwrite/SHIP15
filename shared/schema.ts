@@ -8,7 +8,7 @@ export const shipments = pgTable("shipments", {
   id: varchar("id").primaryKey(), // e.g., "INV-500"
   createdAt: bigint("created_at", { mode: "number" }).notNull(),
   lastUpdated: bigint("last_updated", { mode: "number" }).notNull(),
-  
+
   // Logic toggles
   shipmentType: varchar("shipment_type", { length: 20 }).notNull().default("with-inspection"),
   forwarder: varchar("forwarder", { length: 20 }).notNull().default(""),
@@ -17,13 +17,14 @@ export const shipments = pgTable("shipments", {
   fumigation: varchar("fumigation", { length: 20 }).notNull().default("sky-services"),
   manualFumigationName: text("manual_fumigation_name").default(""),
   manualFumigationMethod: varchar("manual_fumigation_method", { length: 20 }).default("email"),
-  
+
   // Stored as JSON for complex nested data
   details: jsonb("details").notNull().$type<{
     customer: string;
     consignee: string;
     location: string;
     shippingLine: string;
+    clearingAgent: string;
     brand: string;
     inspectionDate: string;
     eta: string;
@@ -36,14 +37,14 @@ export const shipments = pgTable("shipments", {
     container: string;
     booking: string;
   }>(),
-  
+
   commercial: jsonb("commercial").notNull().$type<{
     invoice: string;
     qty: string;
     netWeight: string;
     grossWeight: string;
   }>(),
-  
+
   actual: jsonb("actual").notNull().$type<{
     invoice: string;
     qty: string;
@@ -51,7 +52,7 @@ export const shipments = pgTable("shipments", {
     grossWeight: string;
     invoiceSent: boolean;
   }>(),
-  
+
   customTasks: jsonb("custom_tasks").notNull().$type<Array<{ id: string; text: string; completed: boolean }>>(),
   documents: jsonb("documents").notNull().$type<Array<{ id: string; name: string; file: string; createdAt: number }>>(),
   checklist: jsonb("checklist").notNull().$type<Record<string, boolean | string>>(),

@@ -66,10 +66,10 @@ export default function ShipmentCard({ data }: ShipmentCardProps) {
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-dashed border-border">
           <div className="flex flex-col gap-1">
             <span className="text-xs text-muted-foreground flex items-center gap-1">
-              <CalendarDays className="h-3 w-3" /> Inspection
+              <CalendarDays className="h-3 w-3" /> Loading
             </span>
             <span className="text-sm font-medium">
-              {data.details.inspectionDate ? format(new Date(data.details.inspectionDate), 'MMM d, yyyy') : 'Pending'}
+              {data.details.loadingDate ? format(new Date(data.details.loadingDate), 'MMM d, yyyy') : 'Pending'}
             </span>
           </div>
           <div className="flex flex-col gap-1">

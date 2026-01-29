@@ -17,6 +17,8 @@ export interface ShipmentData {
     customer: string;      // #inp-customer
     consignee: string;     // #inp-consignee
     location: string;      // #inp-location
+    shippingLine: string;  // Shipping Line
+    clearingAgent: string; // Clearing Agent
     brand: string;         // #inp-brand
     inspectionDate: string;// #inp-date (YYYY-MM-DD)
     eta: string;           // #inp-eta (YYYY-MM-DD)
@@ -68,6 +70,8 @@ export const initialShipmentData: ShipmentData = {
     customer: '',
     consignee: '',
     location: '',
+    shippingLine: '',
+    clearingAgent: '',
     brand: '',
     inspectionDate: '',
     eta: '',
