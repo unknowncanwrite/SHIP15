@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { calculateProgress } from '@/lib/shipment-utils';
 import { initialShipmentData } from '@/types/shipment';
 import { useShipments, useCreateShipment } from '@/hooks/useShipments';
-import ShipmentCard from './ShipmentCard';
+import ShipmentCard, { CardViewType } from './ShipmentCard';
 import NotesTable from './NotesTable';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, Search, Filter, LayoutGrid, List, Moon, Sun, BookOpen, Loader2, Check, Clock } from 'lucide-react';
+import { Plus, Search, Filter, LayoutGrid, List, Moon, Sun, BookOpen, Loader2, Check, Clock, Eye } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [newId, setNewId] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
+  const [cardView, setCardView] = useState<CardViewType>('full');
   const { theme, setTheme } = useTheme();
 
   const filteredShipments = shipments
@@ -193,6 +194,22 @@ export default function Dashboard() {
                   <SelectItem value="progress">Progress %</SelectItem>
                 </SelectContent>
               </Select>
+
+              <Select value={cardView} onValueChange={(v) => setCardView(v as CardViewType)}>
+                <SelectTrigger className="w-full sm:w-[140px]">
+                  <div className="flex items-center gap-2">
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                    <SelectValue placeholder="View" />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="full">Full View</SelectItem>
+                  <SelectItem value="compact">Compact</SelectItem>
+                  <SelectItem value="minimal">Minimal</SelectItem>
+                  <SelectItem value="progress">Progress</SelectItem>
+                  <SelectItem value="status">Status</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -200,7 +217,7 @@ export default function Dashboard() {
           {filteredShipments.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredShipments.map((shipment) => (
-                <ShipmentCard key={shipment.id} data={shipment as any} />
+                <ShipmentCard key={shipment.id} data={shipment as any} cardView={cardView} />
               ))}
             </div>
           ) : (

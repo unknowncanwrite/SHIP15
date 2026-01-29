@@ -30,13 +30,13 @@ export function calculateProgress(data: ShipmentData): number {
   if (totalTasks === 0) return 0;
 
   const totalCompleted = standardCompleted + customCompleted;
-  
+
   return Math.round((totalCompleted / totalTasks) * 100);
 }
 
 export function calculatePhaseProgress(data: ShipmentData, tasks: TaskDefinition[]): number {
   if (!tasks || tasks.length === 0) return 0;
-  
+
   const completedCount = tasks.filter(task => data.checklist[task.id]).length;
   return Math.round((completedCount / tasks.length) * 100);
 }
@@ -78,4 +78,31 @@ export function getIncompleteTasks(data: ShipmentData): TaskDefinition[] {
   }
 
   return missedTasks;
+}
+
+export function getNextTask(data: ShipmentData): TaskDefinition | null {
+  let allTasks: TaskDefinition[] = [];
+
+  if (data.shipmentType === 'with-inspection') {
+    allTasks = [...allTasks, ...PHASE_1_TASKS];
+  }
+
+  const fumigationTasks = getFumigationTasks(data);
+  allTasks = [...allTasks, ...fumigationTasks];
+
+  if (data.shipmentType === 'with-inspection') {
+    allTasks = [...allTasks, ...PHASE_3_TASKS];
+  }
+
+  const forwarderTasks = getForwarderTasks(data);
+  allTasks = [...allTasks, ...forwarderTasks];
+
+  // Find the first incomplete task
+  for (const task of allTasks) {
+    if (!data.checklist[task.id]) {
+      return task;
+    }
+  }
+
+  return null;
 }
