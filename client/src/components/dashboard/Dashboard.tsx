@@ -19,7 +19,7 @@ export default function Dashboard() {
   const { data: shipments = [], isLoading } = useShipments();
   const createShipment = useCreateShipment();
   const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState('invoice-asc');
+  const [sortBy, setSortBy] = useState('invoice-desc');
   const [_, setLocation] = useLocation();
   const [newId, setNewId] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);

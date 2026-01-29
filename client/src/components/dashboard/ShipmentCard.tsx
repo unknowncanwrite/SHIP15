@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { CalendarDays, Truck, ExternalLink, ArrowRight, Anchor, Ship } from 'lucide-react';
+import { CalendarDays, Truck, ExternalLink, ArrowRight, Anchor, Ship, UserCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import { calculateProgress } from '@/lib/shipment-utils';
 
@@ -78,6 +78,14 @@ export default function ShipmentCard({ data }: ShipmentCardProps) {
             </span>
             <span className="text-sm font-medium">
               {data.details.eta ? format(new Date(data.details.eta), 'MMM d, yyyy') : 'Pending'}
+            </span>
+          </div>
+          <div className="col-span-2 flex flex-col gap-1 mt-1">
+            <span className="text-xs text-muted-foreground flex items-center gap-1">
+              <UserCheck className="h-3 w-3" /> Clearing Agent
+            </span>
+            <span className="text-sm font-medium">
+              {data.details.clearingAgent || '—'}
             </span>
           </div>
           <div className="col-span-2 flex flex-col gap-1 mt-1">
